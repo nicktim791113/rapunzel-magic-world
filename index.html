@@ -3,120 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂佩的魔法世界 V2.0</title>
+    <title>樂佩的魔法世界 V2.1</title>
     <style>
+        :root {
+            --pink: #E91E63;
+            --rose: #FF4081;
+            --purple: #7B2CBF;
+            --violet: #9C27B0;
+            --gold: #FFC857;
+            --cream: #FFF6D8;
+            --leaf: #3E9E59;
+            --sky: #A8E6FF;
+            --ink: #3A2A44;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: linear-gradient(180deg, #E0F7FA 0%, #FFF9C4 85%, #81C784 85%, #4CAF50 100%);
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #9DE6FF 0%, #FFE7A8 73%, #95D875 73%, #49A752 100%);
+            color: var(--ink);
+            font-family: "Segoe UI", "Microsoft JhengHei", Tahoma, Geneva, Verdana, sans-serif;
             touch-action: none;
             user-select: none;
+        }
+
+        button {
+            font: inherit;
+            touch-action: manipulation;
         }
 
         #game-container {
             position: relative;
             width: 100vw;
             height: 100vh;
+            overflow: hidden;
         }
 
-        #menu-screen {
+        #game-container::before {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
+            left: clamp(22px, 7vw, 90px);
+            bottom: 14vh;
+            width: clamp(72px, 12vw, 135px);
+            height: clamp(205px, 36vh, 360px);
+            background:
+                linear-gradient(90deg, transparent 38%, #F9D878 38% 48%, transparent 48% 56%, #F9D878 56% 66%, transparent 66%),
+                linear-gradient(180deg, #CDB3E9 0%, #9F78CE 100%);
+            border: 4px solid rgba(87, 56, 133, 0.35);
+            border-radius: 18px 18px 10px 10px;
+            box-shadow: inset -14px 0 0 rgba(70, 35, 122, 0.12), 0 12px 24px rgba(82, 54, 93, 0.22);
+            z-index: 0;
+        }
+
+        #game-container::after {
+            content: "";
+            position: absolute;
+            left: clamp(72px, 12vw, 156px);
+            bottom: 13vh;
+            width: clamp(28px, 4vw, 44px);
+            height: 46vh;
+            background: repeating-linear-gradient(
+                45deg,
+                #FFD24F 0 14px,
+                #F6AE2D 14px 24px,
+                #FFE58F 24px 38px
+            );
+            border-radius: 999px;
+            transform: rotate(12deg);
+            transform-origin: top center;
+            box-shadow: 0 4px 0 rgba(112, 73, 32, 0.12);
+            z-index: 1;
+        }
+
+        .tower-roof {
+            position: absolute;
+            left: clamp(8px, 5vw, 70px);
+            bottom: calc(14vh + clamp(196px, 35vh, 350px));
+            width: clamp(98px, 16vw, 162px);
+            height: clamp(70px, 11vh, 105px);
+            background: linear-gradient(135deg, #7B2CBF, #C147E9);
+            clip-path: polygon(50% 0, 100% 100%, 0 100%);
+            filter: drop-shadow(0 8px 10px rgba(69, 33, 103, 0.2));
+            z-index: 1;
+        }
+
+        .lantern {
+            position: absolute;
+            width: 28px;
+            height: 38px;
+            border-radius: 48% 48% 44% 44%;
+            background: radial-gradient(circle at 50% 38%, #FFF8B5 0 18%, #FFD166 42%, #F9A03F 100%);
+            box-shadow: 0 0 18px rgba(255, 198, 72, 0.85);
+            animation: lanternFloat 5s ease-in-out infinite;
+            opacity: 0.86;
+            z-index: 0;
+        }
+
+        .lantern:nth-of-type(2) { top: 12%; right: 16%; animation-delay: -1.5s; transform: scale(0.9); }
+        .lantern:nth-of-type(3) { top: 27%; right: 34%; animation-delay: -2.4s; transform: scale(0.72); }
+        .lantern:nth-of-type(4) { top: 18%; left: 34%; animation-delay: -3.6s; transform: scale(0.78); }
+
+        @keyframes lanternFloat {
+            0%, 100% { translate: 0 0; }
+            50% { translate: 0 -16px; }
+        }
+
+        #menu-screen,
+        #summary-screen,
+        #pause-overlay {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
             text-align: center;
+            z-index: 100;
+            padding: 22px;
+        }
+
+        #menu-screen {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+        }
+
+        #summary-screen,
+        #pause-overlay {
+            display: none;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(5px);
         }
 
         h1 {
-            color: #9C27B0;
-            font-size: 1.8em;
-            margin-bottom: 5px;
+            color: var(--purple);
+            font-size: clamp(2rem, 6vw, 3.4rem);
+            line-height: 1.05;
+            margin: 0 0 8px;
             text-shadow: 2px 2px 0px #FFF;
         }
 
+        h2 {
+            color: var(--purple);
+            font-size: clamp(1.8rem, 5vw, 2.7rem);
+            margin: 0 0 12px;
+        }
+
         .subtitle {
-            color: #555;
+            color: #5B4B63;
             font-size: 1rem;
-            margin-bottom: 20px;
+            margin: 0 0 22px;
         }
 
         .options-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, minmax(118px, 1fr));
             gap: 15px;
-            padding: 0 20px;
-            max-width: 400px;
+            width: min(92vw, 420px);
+        }
+
+        .option-btn,
+        .primary-btn,
+        .tool-btn {
+            border: 0;
+            cursor: pointer;
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 6px 0 #D23A78, 0 14px 24px rgba(107, 54, 114, 0.15);
         }
 
         .option-btn {
-            background-color: white;
-            border: 3px solid #FF4081;
-            color: #333;
-            width: 130px;
-            height: 110px;
-            border-radius: 20px;
-            cursor: pointer;
-            box-shadow: 0 6px 0px #E91E63;
+            min-height: 112px;
+            border: 3px solid var(--rose);
+            border-radius: 18px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: all 0.1s;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
 
-        .option-btn:active {
+        .option-btn:active,
+        .primary-btn:active,
+        .tool-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0px #E91E63;
+            box-shadow: 0 2px 0 #D23A78, 0 8px 16px rgba(107, 54, 114, 0.12);
         }
 
-        .option-icon { font-size: 2.5rem; margin-bottom: 5px; }
-        .option-text { font-size: 1.1rem; font-weight: bold; color: #FF4081; }
+        .option-icon {
+            font-size: 2.65rem;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
 
-        #back-btn {
+        .option-text {
+            color: var(--pink);
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        #hud {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background: #fff;
-            border: 2px solid #ccc;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 1rem;
-            cursor: pointer;
+            top: 12px;
+            left: 12px;
+            right: 12px;
             display: none;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
             z-index: 50;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            pointer-events: none;
         }
 
-        #stats-board {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1rem;
-            color: #333;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 8px 15px;
-            border-radius: 15px;
-            pointer-events: none;
-            z-index: 50;
-            font-weight: bold;
+        #stats-board,
+        #control-board {
             display: flex;
-            gap: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 8px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 4px 14px rgba(60, 42, 64, 0.14);
+        }
+
+        #control-board {
+            pointer-events: auto;
         }
 
         .stat-item {
             display: flex;
             align-items: center;
             gap: 5px;
+            min-width: 64px;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.68);
+            font-weight: 800;
+            font-size: 0.94rem;
+            white-space: nowrap;
+        }
+
+        .stat-label {
+            color: #5E5268;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .tool-btn {
+            width: 44px;
+            height: 40px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            border: 2px solid rgba(233, 30, 99, 0.22);
+            font-size: 1.15rem;
+        }
+
+        #combo-toast,
+        #encourage-toast {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 45;
+            pointer-events: none;
+            text-align: center;
+            text-shadow: 2px 2px 0 #FFF;
+            opacity: 0;
+        }
+
+        #combo-toast {
+            top: 86px;
+            color: var(--pink);
+            font-size: clamp(1.25rem, 4vw, 2.2rem);
+            font-weight: 900;
+        }
+
+        #encourage-toast {
+            top: 132px;
+            color: var(--purple);
+            font-size: clamp(1rem, 3vw, 1.45rem);
+            font-weight: 800;
+        }
+
+        .toast-show {
+            animation: toastPop 0.72s ease-out;
+        }
+
+        @keyframes toastPop {
+            0% { opacity: 0; scale: 0.82; }
+            18% { opacity: 1; scale: 1.08; }
+            82% { opacity: 1; scale: 1; }
+            100% { opacity: 0; scale: 0.95; }
         }
 
         .item {
@@ -130,15 +312,16 @@
             padding: 10px;
             z-index: 10;
             touch-action: none;
+            will-change: transform;
         }
 
         .balloon-style {
             border-radius: 50%;
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1);
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1), 0 10px 18px rgba(70, 45, 78, 0.15);
         }
 
         .balloon-style::after {
-            content: '';
+            content: "";
             position: absolute;
             top: 20%;
             left: 20%;
@@ -152,16 +335,16 @@
         .emoji-style {
             font-size: 100%;
             line-height: 1;
-            filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.1));
+            filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.13));
         }
 
         .pop-effect {
             position: absolute;
             pointer-events: none;
-            animation: popAnim 0.4s ease-out forwards;
+            animation: popAnim 0.42s ease-out forwards;
             font-size: 2rem;
-            font-weight: bold;
-            color: #FF4081;
+            font-weight: 900;
+            color: var(--rose);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -213,63 +396,202 @@
             0% { transform: translateX(0); opacity: 1; }
             100% { transform: translateX(100px) scale(0.5); opacity: 0; }
         }
+
+        .primary-btn {
+            min-width: 128px;
+            min-height: 48px;
+            padding: 10px 18px;
+            border: 3px solid var(--rose);
+            border-radius: 16px;
+            color: var(--pink);
+            font-weight: 900;
+        }
+
+        .summary-score {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(72px, 1fr));
+            gap: 10px;
+            width: min(92vw, 390px);
+            margin: 10px 0 20px;
+        }
+
+        .summary-score div {
+            border-radius: 16px;
+            background: rgba(255,255,255,0.92);
+            padding: 12px 8px;
+            box-shadow: 0 8px 18px rgba(107, 54, 114, 0.12);
+        }
+
+        .summary-score strong {
+            display: block;
+            color: var(--pink);
+            font-size: 1.55rem;
+        }
+
+        .summary-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        @media (max-width: 620px) {
+            #hud {
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            #stats-board {
+                max-width: calc(100vw - 118px);
+                gap: 5px;
+                padding: 6px;
+            }
+
+            #control-board {
+                display: grid;
+                grid-template-columns: repeat(2, 34px);
+                gap: 6px;
+            }
+
+            .tool-btn {
+                width: 34px;
+                height: 34px;
+                border-radius: 11px;
+                font-size: 1rem;
+            }
+
+            .stat-item {
+                min-width: 47px;
+                padding: 5px 6px;
+                font-size: 0.82rem;
+            }
+
+            .stat-label {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
+        <div class="tower-roof" aria-hidden="true"></div>
+        <div class="lantern" aria-hidden="true"></div>
+        <div class="lantern" aria-hidden="true"></div>
+        <div class="lantern" aria-hidden="true"></div>
+
         <div id="menu-screen">
-            <h1>🏰 樂佩的冒險 V2.0</h1>
-            <p class="subtitle">更多朋友、更棒的聲音！</p>
+            <h1>樂佩的魔法世界</h1>
+            <p class="subtitle">30 秒魔法挑戰，收集星星、保持連擊！</p>
             <div class="options-container">
-                <button class="option-btn" onclick="startGame('balloon')">
+                <button class="option-btn" data-mode="balloon">
                     <span class="option-icon">🎈</span>
                     <span class="option-text">氣球</span>
                 </button>
-                <button class="option-btn" onclick="startGame('fruit')">
+                <button class="option-btn" data-mode="fruit">
                     <span class="option-icon">🍎</span>
                     <span class="option-text">水果</span>
                 </button>
-                <button class="option-btn" onclick="startGame('animal')">
+                <button class="option-btn" data-mode="animal">
                     <span class="option-icon">🦁</span>
                     <span class="option-text">動物園</span>
                 </button>
-                <button class="option-btn" onclick="startGame('vehicle')">
+                <button class="option-btn" data-mode="vehicle">
                     <span class="option-icon">🚂</span>
                     <span class="option-text">車車</span>
                 </button>
             </div>
         </div>
 
-        <button id="back-btn" onclick="goBack()">🏠 回選單</button>
+        <div id="hud">
+            <div id="stats-board">
+                <div class="stat-item" style="color:#4CAF50;">
+                    <span>⭐</span>
+                    <span class="stat-label">星星</span>
+                    <span id="score-val">0</span>
+                </div>
+                <div class="stat-item" style="color:#7B2CBF;">
+                    <span>⏱️</span>
+                    <span class="stat-label">時間</span>
+                    <span id="time-val">30</span>
+                </div>
+                <div class="stat-item" style="color:#FF9800;">
+                    <span>🔥</span>
+                    <span class="stat-label">連擊</span>
+                    <span id="combo-val">0</span>
+                </div>
+                <div class="stat-item" style="color:#2196F3;">
+                    <span>✨</span>
+                    <span class="stat-label">關卡</span>
+                    <span id="level-val">1</span>
+                </div>
+                <div class="stat-item" style="color:#FF5722;">
+                    <span>💨</span>
+                    <span class="stat-label">飄走</span>
+                    <span id="miss-val">0</span>
+                </div>
+            </div>
+            <div id="control-board">
+                <button class="tool-btn" id="pause-btn" title="暫停" aria-label="暫停">⏸️</button>
+                <button class="tool-btn" id="restart-btn" title="重新開始" aria-label="重新開始">🔄</button>
+                <button class="tool-btn" id="mute-btn" title="靜音" aria-label="靜音">🔊</button>
+                <button class="tool-btn" id="back-btn" title="回選單" aria-label="回選單">🏠</button>
+            </div>
+        </div>
 
-        <div id="stats-board" style="display:none;">
-            <div class="stat-item" style="color:#4CAF50;">
-                <span>✨</span> <span id="score-val">0</span>
+        <div id="combo-toast"></div>
+        <div id="encourage-toast"></div>
+
+        <div id="pause-overlay">
+            <h2>魔法暫停中</h2>
+            <p class="subtitle">休息一下，再繼續收集星星。</p>
+            <div class="summary-actions">
+                <button class="primary-btn" id="resume-btn">繼續</button>
+                <button class="primary-btn" id="pause-restart-btn">重玩</button>
             </div>
-            <div class="stat-item" style="color:#555;">
-                <span>🔻</span> <span id="spawn-val">0</span>
+        </div>
+
+        <div id="summary-screen">
+            <h2 id="summary-title">挑戰完成！</h2>
+            <p class="subtitle" id="summary-message">魔法光收集得很漂亮。</p>
+            <div class="summary-score">
+                <div><span>星星</span><strong id="final-score">0</strong></div>
+                <div><span>最高連擊</span><strong id="final-combo">0</strong></div>
+                <div><span>到達關卡</span><strong id="final-level">1</strong></div>
             </div>
-            <div class="stat-item" style="color:#FF5722;">
-                <span>👋</span> <span id="miss-val">0</span>
+            <div class="summary-actions">
+                <button class="primary-btn" id="summary-restart-btn">再玩一次</button>
+                <button class="primary-btn" id="summary-menu-btn">換模式</button>
             </div>
         </div>
     </div>
 
     <script>
+        const GAME_DURATION = 30;
+        const INITIAL_SPAWN_MS = 1450;
+        const MIN_SPAWN_MS = 620;
+        const INITIAL_FALL_MIN = 4300;
+        const INITIAL_FALL_MAX = 6800;
+        const COMBO_WINDOW_MS = 1250;
+
         const gameData = {
             balloon: {
+                label: '氣球',
                 type: 'color',
                 missClass: 'miss-balloon',
                 items: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#FF9F43', '#54A0FF', '#FF9FF3', '#A3CB38'],
-                popText: '✨'
+                popText: '✨',
+                encouragements: ['氣球飛出魔法光！', '漂亮的顏色！', '樂佩看到了星星！']
             },
             fruit: {
+                label: '水果',
                 type: 'emoji',
                 missClass: 'miss-fruit',
                 items: ['🍎', '🍌', '🍇', '🍉', '🍓', '🍑', '🍍', '🥝', '🍒', '🥭', '🍐'],
-                popText: 'Yum!'
+                popText: 'Yum!',
+                encouragements: ['水果籃滿滿的！', '甜甜的魔法！', '好快的反應！']
             },
             animal: {
+                label: '動物園',
                 type: 'sound_object',
                 missClass: 'miss-animal',
                 items: [
@@ -284,9 +606,11 @@
                     { emoji: '🐵', sound: 'monkey' },
                     { emoji: '🐘', sound: 'elephant' }
                 ],
-                popText: '❤'
+                popText: '❤',
+                encouragements: ['小動物打招呼！', '聽，是動物朋友！', '溫柔又準確！']
             },
             vehicle: {
+                label: '車車',
                 type: 'sound_object',
                 missClass: 'miss-vehicle',
                 items: [
@@ -301,33 +625,80 @@
                     { emoji: '🚀', sound: 'plane' },
                     { emoji: '🚲', sound: 'bike' }
                 ],
-                popText: 'Vroom!'
+                popText: 'Vroom!',
+                encouragements: ['出發去冒險！', '車車跑得真快！', '交通魔法啟動！']
             }
         };
 
-        let currentMode = null;
-        let score = 0;
-        let totalSpawn = 0;
-        let missed = 0;
-        let spawnInterval;
-        let audioCtx;
-        let noiseBuffer;
+        const state = {
+            mode: null,
+            score: 0,
+            totalSpawn: 0,
+            missed: 0,
+            combo: 0,
+            bestCombo: 0,
+            level: 1,
+            timeLeft: GAME_DURATION,
+            running: false,
+            paused: false,
+            muted: false,
+            lastHitAt: 0,
+            spawnMs: INITIAL_SPAWN_MS,
+            activeItems: new Set()
+        };
+
+        let spawnTimer = null;
+        let countdownTimer = null;
+        let audioCtx = null;
+        let masterGain = null;
+        let noiseBuffer = null;
 
         const container = document.getElementById('game-container');
         const menuScreen = document.getElementById('menu-screen');
-        const backBtn = document.getElementById('back-btn');
-        const statsBoard = document.getElementById('stats-board');
+        const hud = document.getElementById('hud');
+        const pauseOverlay = document.getElementById('pause-overlay');
+        const summaryScreen = document.getElementById('summary-screen');
         const scoreVal = document.getElementById('score-val');
-        const spawnVal = document.getElementById('spawn-val');
+        const timeVal = document.getElementById('time-val');
+        const comboVal = document.getElementById('combo-val');
+        const levelVal = document.getElementById('level-val');
         const missVal = document.getElementById('miss-val');
+        const comboToast = document.getElementById('combo-toast');
+        const encourageToast = document.getElementById('encourage-toast');
+        const pauseBtn = document.getElementById('pause-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const muteBtn = document.getElementById('mute-btn');
+        const backBtn = document.getElementById('back-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+        const pauseRestartBtn = document.getElementById('pause-restart-btn');
+        const summaryRestartBtn = document.getElementById('summary-restart-btn');
+        const summaryMenuBtn = document.getElementById('summary-menu-btn');
+        const finalScore = document.getElementById('final-score');
+        const finalCombo = document.getElementById('final-combo');
+        const finalLevel = document.getElementById('final-level');
+        const summaryTitle = document.getElementById('summary-title');
+        const summaryMessage = document.getElementById('summary-message');
 
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = state.muted ? 0 : 0.24;
+                masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+        }
+
+        function connectSound(node) {
+            node.connect(masterGain || audioCtx.destination);
+        }
+
+        function updateMasterVolume() {
+            if (!masterGain || !audioCtx) return;
+            const target = state.muted ? 0 : 0.24;
+            masterGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.02);
         }
 
         function getNoiseBuffer() {
@@ -343,34 +714,34 @@
         }
 
         function playPopSound() {
-            if (!audioCtx) return;
+            if (!audioCtx || state.muted) return;
             const t = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            connectSound(gain);
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(500, t);
-            osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
-            gain.gain.setValueAtTime(0.3, t);
+            osc.frequency.setValueAtTime(540, t);
+            osc.frequency.exponentialRampToValueAtTime(120, t + 0.1);
+            gain.gain.setValueAtTime(0.8, t);
             gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
             osc.start(t);
             osc.stop(t + 0.1);
         }
 
         function playAnimalSound(type) {
-            if (!audioCtx) return;
+            if (!audioCtx || state.muted) return;
             const t = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            connectSound(gain);
 
             if (type === 'dog') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(300, t);
                 osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
-                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.setValueAtTime(0.65, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.1);
                 osc.start(t); osc.stop(t + 0.1);
             } else if (type === 'cat') {
@@ -378,22 +749,22 @@
                 osc.frequency.setValueAtTime(300, t);
                 osc.frequency.linearRampToValueAtTime(500, t + 0.2);
                 osc.frequency.linearRampToValueAtTime(350, t + 0.5);
-                gain.gain.setValueAtTime(0.1, t);
-                gain.gain.linearRampToValueAtTime(0.1, t + 0.4);
+                gain.gain.setValueAtTime(0.38, t);
+                gain.gain.linearRampToValueAtTime(0.38, t + 0.4);
                 gain.gain.linearRampToValueAtTime(0, t + 0.5);
                 osc.start(t); osc.stop(t + 0.5);
             } else if (type === 'duck') {
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(300, t);
                 osc.frequency.linearRampToValueAtTime(200, t + 0.15);
-                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.setValueAtTime(0.34, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.15);
                 osc.start(t); osc.stop(t + 0.15);
             } else if (type === 'cow') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, t);
                 osc.frequency.linearRampToValueAtTime(100, t + 0.6);
-                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.setValueAtTime(0.56, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.6);
                 osc.start(t); osc.stop(t + 0.6);
             } else if (type === 'sheep') {
@@ -405,28 +776,24 @@
                 vibrato.connect(vGain);
                 vGain.connect(osc.frequency);
                 vibrato.start(t);
-
                 osc.frequency.setValueAtTime(300, t);
                 osc.frequency.linearRampToValueAtTime(250, t + 0.5);
-                gain.gain.setValueAtTime(0.15, t);
+                gain.gain.setValueAtTime(0.45, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.5);
                 osc.start(t); osc.stop(t + 0.5); vibrato.stop(t + 0.5);
             } else if (type === 'lion') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(100, t);
                 osc.frequency.linearRampToValueAtTime(50, t + 0.4);
-
                 const noise = audioCtx.createBufferSource();
                 noise.buffer = getNoiseBuffer();
                 const nGain = audioCtx.createGain();
                 noise.connect(nGain);
-                nGain.connect(audioCtx.destination);
-
-                nGain.gain.setValueAtTime(0.3, t);
+                connectSound(nGain);
+                nGain.gain.setValueAtTime(0.62, t);
                 nGain.gain.linearRampToValueAtTime(0, t + 0.4);
-                gain.gain.setValueAtTime(0.3, t);
+                gain.gain.setValueAtTime(0.6, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.4);
-
                 osc.start(t); noise.start(t);
                 osc.stop(t + 0.4); noise.stop(t + 0.4);
             } else if (type === 'monkey') {
@@ -434,233 +801,388 @@
                 osc.frequency.setValueAtTime(400, t);
                 osc.frequency.linearRampToValueAtTime(600, t + 0.1);
                 osc.frequency.linearRampToValueAtTime(400, t + 0.2);
-                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.setValueAtTime(0.38, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.2);
                 osc.start(t); osc.stop(t + 0.2);
 
                 const osc2 = audioCtx.createOscillator();
                 const g2 = audioCtx.createGain();
-                osc2.connect(g2); g2.connect(audioCtx.destination);
+                osc2.connect(g2);
+                connectSound(g2);
                 osc2.frequency.setValueAtTime(400, t + 0.25);
                 osc2.frequency.linearRampToValueAtTime(600, t + 0.35);
-                g2.gain.setValueAtTime(0.1, t+0.25);
-                g2.gain.linearRampToValueAtTime(0, t+0.45);
-                osc2.start(t+0.25); osc2.stop(t+0.45);
+                g2.gain.setValueAtTime(0.36, t + 0.25);
+                g2.gain.linearRampToValueAtTime(0, t + 0.45);
+                osc2.start(t + 0.25); osc2.stop(t + 0.45);
             } else if (type === 'elephant') {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(600, t);
                 osc.frequency.linearRampToValueAtTime(800, t + 0.1);
                 osc.frequency.linearRampToValueAtTime(300, t + 0.6);
-                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.setValueAtTime(0.36, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.6);
                 osc.start(t); osc.stop(t + 0.6);
             } else if (type === 'frog') {
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(150, t);
-                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.setValueAtTime(0.36, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.15);
                 osc.start(t); osc.stop(t + 0.15);
             } else {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(100, t);
-                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.setValueAtTime(0.5, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.2);
                 osc.start(t); osc.stop(t + 0.2);
             }
         }
 
         function playVehicleSound(type) {
-            if (!audioCtx) return;
+            if (!audioCtx || state.muted) return;
             const t = audioCtx.currentTime;
 
             if (type === 'car') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.connect(gain); connectSound(gain);
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(400, t);
-                gain.gain.setValueAtTime(0.1, t);
-                gain.gain.setValueAtTime(0, t+0.1);
-                gain.gain.setValueAtTime(0.1, t+0.15);
-                gain.gain.setValueAtTime(0, t+0.25);
-                osc.start(t); osc.stop(t+0.3);
+                gain.gain.setValueAtTime(0.42, t);
+                gain.gain.setValueAtTime(0, t + 0.1);
+                gain.gain.setValueAtTime(0.42, t + 0.15);
+                gain.gain.setValueAtTime(0, t + 0.25);
+                osc.start(t); osc.stop(t + 0.3);
             } else if (type === 'bike') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.connect(gain); connectSound(gain);
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(1200, t);
-                gain.gain.setValueAtTime(0.1, t);
-                gain.gain.exponentialRampToValueAtTime(0.01, t+0.2);
-                osc.start(t); osc.stop(t+0.2);
+                gain.gain.setValueAtTime(0.42, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+                osc.start(t); osc.stop(t + 0.2);
 
                 const osc2 = audioCtx.createOscillator();
                 const g2 = audioCtx.createGain();
-                osc2.connect(g2); g2.connect(audioCtx.destination);
+                osc2.connect(g2); connectSound(g2);
                 osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(1200, t+0.25);
-                g2.gain.setValueAtTime(0.1, t+0.25);
-                g2.gain.exponentialRampToValueAtTime(0.01, t+0.45);
-                osc2.start(t+0.25); osc2.stop(t+0.45);
+                osc2.frequency.setValueAtTime(1200, t + 0.25);
+                g2.gain.setValueAtTime(0.42, t + 0.25);
+                g2.gain.exponentialRampToValueAtTime(0.01, t + 0.45);
+                osc2.start(t + 0.25); osc2.stop(t + 0.45);
             } else if (type === 'train') {
-                const w1 = audioCtx.createOscillator(); w1.type='triangle';
-                const w2 = audioCtx.createOscillator(); w2.type='triangle';
+                const w1 = audioCtx.createOscillator(); w1.type = 'triangle';
+                const w2 = audioCtx.createOscillator(); w2.type = 'triangle';
                 const g = audioCtx.createGain();
-                w1.connect(g); w2.connect(g); g.connect(audioCtx.destination);
+                w1.connect(g); w2.connect(g); connectSound(g);
                 w1.frequency.value = 300; w2.frequency.value = 400;
-                g.gain.setValueAtTime(0.1, t);
-                g.gain.linearRampToValueAtTime(0, t+0.6);
+                g.gain.setValueAtTime(0.4, t);
+                g.gain.linearRampToValueAtTime(0, t + 0.6);
                 w1.start(t); w2.start(t);
-                w1.stop(t+0.6); w2.stop(t+0.6);
+                w1.stop(t + 0.6); w2.stop(t + 0.6);
             } else if (type === 'siren') {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.connect(gain); connectSound(gain);
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(600, t);
-                osc.frequency.linearRampToValueAtTime(800, t+0.2);
-                osc.frequency.linearRampToValueAtTime(600, t+0.4);
-                gain.gain.setValueAtTime(0.05, t);
-                gain.gain.linearRampToValueAtTime(0, t+0.5);
-                osc.start(t); osc.stop(t+0.5);
+                osc.frequency.linearRampToValueAtTime(800, t + 0.2);
+                osc.frequency.linearRampToValueAtTime(600, t + 0.4);
+                gain.gain.setValueAtTime(0.22, t);
+                gain.gain.linearRampToValueAtTime(0, t + 0.5);
+                osc.start(t); osc.stop(t + 0.5);
             } else {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.connect(gain); connectSound(gain);
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(800, t);
-                osc.frequency.exponentialRampToValueAtTime(200, t+0.6);
-                gain.gain.setValueAtTime(0.05, t);
-                gain.gain.linearRampToValueAtTime(0, t+0.6);
-                osc.start(t); osc.stop(t+0.6);
+                osc.frequency.exponentialRampToValueAtTime(200, t + 0.6);
+                gain.gain.setValueAtTime(0.22, t);
+                gain.gain.linearRampToValueAtTime(0, t + 0.6);
+                osc.start(t); osc.stop(t + 0.6);
             }
         }
 
         function updateStats() {
-            scoreVal.innerText = score;
-            spawnVal.innerText = totalSpawn;
-            missVal.innerText = missed;
+            scoreVal.innerText = state.score;
+            timeVal.innerText = state.timeLeft;
+            comboVal.innerText = state.combo;
+            levelVal.innerText = state.level;
+            missVal.innerText = state.missed;
+        }
+
+        function levelForScore(score) {
+            return Math.min(8, 1 + Math.floor(score / 10));
+        }
+
+        function spawnDelayForLevel(level) {
+            return Math.max(MIN_SPAWN_MS, INITIAL_SPAWN_MS - (level - 1) * 115);
+        }
+
+        function fallDurationForLevel(level) {
+            const min = Math.max(2100, INITIAL_FALL_MIN - (level - 1) * 240);
+            const max = Math.max(3400, INITIAL_FALL_MAX - (level - 1) * 260);
+            return min + Math.random() * (max - min);
+        }
+
+        function resetState(mode) {
+            state.mode = mode;
+            state.score = 0;
+            state.totalSpawn = 0;
+            state.missed = 0;
+            state.combo = 0;
+            state.bestCombo = 0;
+            state.level = 1;
+            state.timeLeft = GAME_DURATION;
+            state.running = true;
+            state.paused = false;
+            state.lastHitAt = 0;
+            state.spawnMs = INITIAL_SPAWN_MS;
+            state.activeItems.clear();
+            updateStats();
         }
 
         function startGame(mode) {
             initAudio();
-            currentMode = mode;
+            stopTimers();
+            clearItems();
+            resetState(mode);
             menuScreen.style.display = 'none';
-            backBtn.style.display = 'block';
-            statsBoard.style.display = 'flex';
+            summaryScreen.style.display = 'none';
+            pauseOverlay.style.display = 'none';
+            hud.style.display = 'flex';
+            pauseBtn.innerText = '⏸️';
+            spawnItem();
+            scheduleSpawn();
+            countdownTimer = setInterval(tickCountdown, 1000);
+        }
 
-            score = 0;
-            totalSpawn = 0;
-            missed = 0;
+        function scheduleSpawn() {
+            clearTimeout(spawnTimer);
+            if (!state.running || state.paused) return;
+            spawnTimer = setTimeout(() => {
+                spawnItem();
+                scheduleSpawn();
+            }, state.spawnMs);
+        }
+
+        function tickCountdown() {
+            if (!state.running || state.paused) return;
+            state.timeLeft = Math.max(0, state.timeLeft - 1);
             updateStats();
+            if (state.timeLeft <= 0) {
+                finishGame();
+            }
+        }
 
-            const oldItems = document.querySelectorAll('.item');
-            oldItems.forEach(i => i.remove());
+        function stopTimers() {
+            clearTimeout(spawnTimer);
+            clearInterval(countdownTimer);
+            spawnTimer = null;
+            countdownTimer = null;
+        }
 
-            createItem();
-            spawnInterval = setInterval(createItem, 1500);
+        function clearItems() {
+            document.querySelectorAll('.item, .pop-effect').forEach(item => item.remove());
+            state.activeItems.clear();
         }
 
         function goBack() {
-            clearInterval(spawnInterval);
+            stopTimers();
+            clearItems();
+            state.running = false;
+            state.paused = false;
+            hud.style.display = 'none';
+            pauseOverlay.style.display = 'none';
+            summaryScreen.style.display = 'none';
             menuScreen.style.display = 'flex';
-            backBtn.style.display = 'none';
-            statsBoard.style.display = 'none';
-            const oldItems = document.querySelectorAll('.item');
-            oldItems.forEach(i => i.remove());
         }
 
-        function createItem() {
-            if (menuScreen.style.display !== 'none') return;
+        function restartGame() {
+            if (!state.mode) return;
+            startGame(state.mode);
+        }
+
+        function setPaused(paused) {
+            if (!state.running) return;
+            state.paused = paused;
+            pauseOverlay.style.display = paused ? 'flex' : 'none';
+            pauseBtn.innerText = paused ? '▶️' : '⏸️';
+            document.querySelectorAll('.item').forEach(item => {
+                const animation = item._fallAnimation;
+                if (!animation) return;
+                if (paused) {
+                    animation.pause();
+                } else {
+                    animation.play();
+                }
+            });
+            if (paused) {
+                clearTimeout(spawnTimer);
+            } else {
+                scheduleSpawn();
+            }
+        }
+
+        function toggleMute() {
+            state.muted = !state.muted;
+            muteBtn.innerText = state.muted ? '🔇' : '🔊';
+            updateMasterVolume();
+        }
+
+        function finishGame() {
+            stopTimers();
+            state.running = false;
+            state.paused = false;
+            clearItems();
+            hud.style.display = 'none';
+            pauseOverlay.style.display = 'none';
+            finalScore.innerText = state.score;
+            finalCombo.innerText = state.bestCombo;
+            finalLevel.innerText = state.level;
+            summaryTitle.innerText = state.score >= 40 ? '金色魔法完成！' : '挑戰完成！';
+            summaryMessage.innerText = state.score >= 40
+                ? '樂佩的天燈都亮起來了。'
+                : '再玩一次，下一輪會更亮。';
+            summaryScreen.style.display = 'flex';
+        }
+
+        function showToast(node, text) {
+            node.innerText = text;
+            node.classList.remove('toast-show');
+            void node.offsetWidth;
+            node.classList.add('toast-show');
+        }
+
+        function updateCombo() {
+            const now = performance.now();
+            state.combo = now - state.lastHitAt <= COMBO_WINDOW_MS ? state.combo + 1 : 1;
+            state.lastHitAt = now;
+            state.bestCombo = Math.max(state.bestCombo, state.combo);
+
+            if (state.combo >= 3) {
+                showToast(comboToast, `${state.combo} 連擊！`);
+            }
+        }
+
+        function maybeLevelUp() {
+            const nextLevel = levelForScore(state.score);
+            if (nextLevel !== state.level) {
+                state.level = nextLevel;
+                state.spawnMs = spawnDelayForLevel(state.level);
+                showToast(encourageToast, `第 ${state.level} 關！速度加快`);
+                scheduleSpawn();
+            }
+        }
+
+        function randomEncouragement() {
+            const list = gameData[state.mode].encouragements;
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function spawnItem() {
+            if (!state.running || state.paused || !state.mode) return;
 
             const item = document.createElement('div');
             item.classList.add('item');
-            totalSpawn++;
-            updateStats();
+            state.totalSpawn++;
+            state.activeItems.add(item);
 
-            const size = 70 + Math.random() * 40;
+            const size = 68 + Math.random() * 38;
             item.style.width = `${size}px`;
             item.style.height = `${size}px`;
 
-            const maxX = Math.max(0, window.innerWidth - size);
-            const startX = Math.random() * maxX;
+            const maxX = Math.max(0, window.innerWidth - size - 24);
+            const startX = 12 + Math.random() * maxX;
             item.style.left = `${startX}px`;
             item.style.top = `-${size}px`;
 
-            const modeData = gameData[currentMode];
-            let content;
+            const modeData = gameData[state.mode];
             let soundType = 'default';
-            let isMissed = false;
 
             if (modeData.type === 'color') {
-                content = modeData.items[Math.floor(Math.random() * modeData.items.length)];
-                item.style.backgroundColor = content;
+                const color = modeData.items[Math.floor(Math.random() * modeData.items.length)];
+                item.style.backgroundColor = color;
                 item.classList.add('balloon-style');
             } else if (modeData.type === 'emoji') {
-                content = modeData.items[Math.floor(Math.random() * modeData.items.length)];
+                const content = modeData.items[Math.floor(Math.random() * modeData.items.length)];
                 item.innerText = content;
                 item.classList.add('emoji-style');
                 item.style.fontSize = `${size * 0.8}px`;
-            } else if (modeData.type === 'sound_object') {
+            } else {
                 const choice = modeData.items[Math.floor(Math.random() * modeData.items.length)];
-                content = choice.emoji;
+                item.innerText = choice.emoji;
                 soundType = choice.sound;
-                item.innerText = content;
                 item.classList.add('emoji-style');
                 item.style.fontSize = `${size * 0.8}px`;
             }
 
-            const duration = 4000 + Math.random() * 3000;
-            const endY = window.innerHeight - size - 20;
+            const endY = window.innerHeight - size - 22;
             const animation = item.animate([
                 { transform: 'translateY(0px) rotate(0deg)' },
-                { transform: `translateY(${window.innerHeight}px) rotate(${currentMode === 'vehicle' ? 0 : (Math.random() * 60 - 30)}deg)` }
+                { transform: `translateY(${window.innerHeight}px) rotate(${state.mode === 'vehicle' ? 0 : (Math.random() * 60 - 30)}deg)` }
             ], {
-                duration: duration,
+                duration: fallDurationForLevel(state.level),
                 easing: 'linear'
             });
 
+            item._fallAnimation = animation;
+            item._missed = false;
+
             animation.onfinish = () => {
-                if (!item.parentElement) return;
-
-                isMissed = true;
-                missed++;
+                if (!item.parentElement || item._missed) return;
+                item._missed = true;
+                state.missed++;
+                state.combo = 0;
                 updateStats();
-
                 animation.cancel();
                 item.style.top = `${endY}px`;
                 item.classList.add(modeData.missClass);
-
-                setTimeout(() => {
-                    if (item.parentElement) item.remove();
-                }, 800);
+                setTimeout(() => removeItem(item), 800);
             };
 
-            const handleInteract = (e) => {
-                if (isMissed) return;
-                e.preventDefault();
-                e.stopPropagation();
+            item.addEventListener('pointerdown', (event) => {
+                handleInteract(event, item, soundType, size, modeData);
+            });
 
-                if (currentMode === 'animal') {
-                    playAnimalSound(soundType);
-                } else if (currentMode === 'vehicle') {
-                    playVehicleSound(soundType);
-                } else {
-                    playPopSound();
-                }
-
-                const rect = item.getBoundingClientRect();
-                showPopText(rect.left, rect.top, size, modeData.popText);
-
-                score++;
-                updateStats();
-
-                item.remove();
-                animation.cancel();
-            };
-
-            item.addEventListener('pointerdown', handleInteract);
             container.appendChild(item);
+            updateStats();
+        }
+
+        function handleInteract(event, item, soundType, size, modeData) {
+            if (!state.running || state.paused || item._missed) return;
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (state.mode === 'animal') {
+                playAnimalSound(soundType);
+            } else if (state.mode === 'vehicle') {
+                playVehicleSound(soundType);
+            } else {
+                playPopSound();
+            }
+
+            const rect = item.getBoundingClientRect();
+            showPopText(rect.left, rect.top, size, modeData.popText);
+
+            updateCombo();
+            state.score += state.combo >= 5 ? 2 : 1;
+            maybeLevelUp();
+
+            if (state.score % 7 === 0 || state.combo === 1) {
+                showToast(encourageToast, randomEncouragement());
+            }
+
+            removeItem(item);
+            updateStats();
+        }
+
+        function removeItem(item) {
+            if (!item) return;
+            if (item._fallAnimation) item._fallAnimation.cancel();
+            state.activeItems.delete(item);
+            if (item.parentElement) item.remove();
         }
 
         function showPopText(x, y, size, text) {
@@ -672,8 +1194,57 @@
             pop.style.width = `${size}px`;
             pop.style.height = `${size}px`;
             container.appendChild(pop);
-            setTimeout(() => pop.remove(), 400);
+            setTimeout(() => pop.remove(), 420);
         }
+
+        function renderGameToText() {
+            const items = [...document.querySelectorAll('.item')].slice(0, 8).map((item) => {
+                const rect = item.getBoundingClientRect();
+                return {
+                    text: item.innerText || item.style.backgroundColor || 'balloon',
+                    x: Math.round(rect.left + rect.width / 2),
+                    y: Math.round(rect.top + rect.height / 2),
+                    size: Math.round(rect.width)
+                };
+            });
+            return JSON.stringify({
+                note: 'origin is top-left; x right, y down',
+                screen: menuScreen.style.display !== 'none' ? 'menu' : summaryScreen.style.display !== 'none' ? 'summary' : state.paused ? 'paused' : 'game',
+                mode: state.mode,
+                score: state.score,
+                timeLeft: state.timeLeft,
+                combo: state.combo,
+                bestCombo: state.bestCombo,
+                level: state.level,
+                missed: state.missed,
+                muted: state.muted,
+                activeItems: items
+            });
+        }
+
+        window.render_game_to_text = renderGameToText;
+        window.advanceTime = function advanceTime() {
+            return renderGameToText();
+        };
+        window.__gameState = state;
+
+        document.querySelectorAll('.option-btn').forEach(button => {
+            button.addEventListener('pointerdown', () => startGame(button.dataset.mode));
+        });
+        pauseBtn.addEventListener('pointerdown', () => setPaused(!state.paused));
+        restartBtn.addEventListener('pointerdown', restartGame);
+        backBtn.addEventListener('pointerdown', goBack);
+        resumeBtn.addEventListener('pointerdown', () => setPaused(false));
+        pauseRestartBtn.addEventListener('pointerdown', restartGame);
+        summaryRestartBtn.addEventListener('pointerdown', restartGame);
+        summaryMenuBtn.addEventListener('pointerdown', goBack);
+        muteBtn.addEventListener('pointerdown', toggleMute);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'm') toggleMute();
+            if (event.key.toLowerCase() === 'p') setPaused(!state.paused);
+            if (event.key.toLowerCase() === 'r') restartGame();
+        });
 
         document.body.addEventListener('touchmove', function(e) {
             e.preventDefault();
