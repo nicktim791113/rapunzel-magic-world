@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂佩的魔法世界 V2.4</title>
+    <title>樂佩的魔法世界 V2.5</title>
     <style>
         :root {
             --pink: #E91E63;
@@ -260,6 +260,39 @@
             grid-template-columns: repeat(4, minmax(112px, 1fr));
             gap: 12px;
             width: min(92vw, 760px);
+        }
+
+        .play-actions {
+            width: min(92vw, 760px);
+            display: grid;
+            grid-template-columns: minmax(190px, 1.1fr) minmax(220px, 1fr);
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .adventure-btn {
+            min-height: 50px;
+            border: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #FF4081, #7B2CBF);
+            color: white;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 1.05rem;
+            box-shadow: 0 6px 0 #B52C74, 0 14px 24px rgba(107, 54, 114, 0.18);
+        }
+
+        .challenge-hint {
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.7);
+            color: #5B4B63;
+            font-weight: 800;
         }
 
         .option-btn,
@@ -828,6 +861,25 @@
                 gap: 10px;
             }
 
+            .play-actions {
+                width: 100%;
+                grid-template-columns: 1fr;
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+
+            .adventure-btn {
+                min-height: 42px;
+                font-size: 0.96rem;
+                box-shadow: 0 4px 0 #B52C74, 0 10px 18px rgba(107, 54, 114, 0.12);
+            }
+
+            .challenge-hint {
+                min-height: 30px;
+                padding: 4px 8px;
+                font-size: 0.78rem;
+            }
+
             .option-btn {
                 min-height: 78px;
                 border-radius: 15px;
@@ -990,6 +1042,7 @@
             }
 
             .options-container,
+            .play-actions,
             .settings-panel,
             .menu-panels {
                 width: min(94vw, 820px);
@@ -1054,6 +1107,7 @@
 </head>
 <body>
     <div id="game-container">
+        <audio id="bg-music" src="assets/audio/where-the-sunbeams-hide.mp3" loop preload="auto" playsinline></audio>
         <div class="scene-sun" aria-hidden="true"></div>
         <div class="scene-cloud cloud-a" aria-hidden="true"></div>
         <div class="scene-cloud cloud-b" aria-hidden="true"></div>
@@ -1071,7 +1125,11 @@
 
         <div id="menu-screen">
             <h1>樂佩的魔法世界</h1>
-            <p class="subtitle">選一個魔法挑戰，收集星星、保持連擊！</p>
+            <p class="subtitle">闖過十級冒險，或選一個模式挑戰！</p>
+            <div class="play-actions">
+                <button class="adventure-btn" id="adventure-start-btn">✨ 冒險闖關</button>
+                <div class="challenge-hint">限時挑戰：選下方模式開始</div>
+            </div>
             <div class="options-container">
                 <button class="option-btn" data-mode="balloon">
                     <span class="option-icon">🎈</span>
@@ -1278,13 +1336,6 @@
             '#A3CB38': '綠氣球'
         };
 
-        const musicPattern = [
-            392, 494, 587, 659,
-            587, 494, 440, 392,
-            440, 523, 659, 784,
-            659, 587, 494, null
-        ];
-
         const gameData = {
             balloon: {
                 label: '氣球',
@@ -1342,7 +1393,21 @@
             }
         };
 
+        const adventureLevels = [
+            { mode: 'balloon', title: '星光起點', goal: 3, time: 50 },
+            { mode: 'fruit', title: '果園尋寶', goal: 3, time: 50 },
+            { mode: 'animal', title: '動物朋友', goal: 3, time: 48 },
+            { mode: 'vehicle', title: '小小車站', goal: 3, time: 48 },
+            { mode: 'fruit', title: '甜蜜分類', goal: 4, time: 46 },
+            { mode: 'animal', title: '森林呼喚', goal: 4, time: 44 },
+            { mode: 'balloon', title: '彩球旋風', goal: 5, time: 42 },
+            { mode: 'vehicle', title: '道路衝刺', goal: 5, time: 40 },
+            { mode: 'fruit', title: '魔法果籃', goal: 6, time: 38 },
+            { mode: 'animal', title: '天燈大挑戰', goal: 6, time: 36 }
+        ];
+
         const state = {
+            playMode: 'challenge',
             mode: null,
             score: 0,
             totalSpawn: 0,
@@ -1361,6 +1426,12 @@
             spawnMs: INITIAL_SPAWN_MS,
             mission: null,
             targetKey: '',
+            transitioning: false,
+            adventure: {
+                active: false,
+                levelIndex: 0,
+                title: ''
+            },
             activePowerups: {
                 slow: false,
                 magnetHits: 0,
@@ -1375,12 +1446,10 @@
         let countdownTimer = null;
         let audioCtx = null;
         let masterGain = null;
-        let musicGain = null;
-        let musicTimer = null;
-        let musicStep = 0;
         let noiseBuffer = null;
 
         const container = document.getElementById('game-container');
+        const bgMusic = document.getElementById('bg-music');
         const menuScreen = document.getElementById('menu-screen');
         const hud = document.getElementById('hud');
         const pauseOverlay = document.getElementById('pause-overlay');
@@ -1396,6 +1465,7 @@
         const missionToast = document.getElementById('mission-toast');
         const pauseBtn = document.getElementById('pause-btn');
         const restartBtn = document.getElementById('restart-btn');
+        const adventureStartBtn = document.getElementById('adventure-start-btn');
         const musicBtn = document.getElementById('music-btn');
         const musicMenuBtn = document.getElementById('music-menu-btn');
         const muteBtn = document.getElementById('mute-btn');
@@ -1507,10 +1577,7 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 masterGain = audioCtx.createGain();
-                musicGain = audioCtx.createGain();
                 masterGain.gain.value = state.muted ? 0 : 0.24;
-                musicGain.gain.value = 0.12;
-                musicGain.connect(masterGain);
                 masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
@@ -1523,50 +1590,20 @@
         }
 
         function updateMasterVolume() {
+            bgMusic.volume = state.muted ? 0 : 0.36;
             if (!masterGain || !audioCtx) return;
             const target = state.muted ? 0 : 0.24;
             masterGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.02);
         }
 
-        function playMusicTone(frequency, startTime, duration) {
-            if (!audioCtx || !musicGain || !frequency) return;
-            const osc = audioCtx.createOscillator();
-            const harmony = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            harmony.type = 'sine';
-            osc.frequency.setValueAtTime(frequency, startTime);
-            harmony.frequency.setValueAtTime(frequency * 2, startTime);
-            osc.connect(gain);
-            harmony.connect(gain);
-            gain.connect(musicGain);
-            gain.gain.setValueAtTime(0.0001, startTime);
-            gain.gain.exponentialRampToValueAtTime(0.26, startTime + 0.025);
-            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-            osc.start(startTime);
-            harmony.start(startTime);
-            osc.stop(startTime + duration + 0.04);
-            harmony.stop(startTime + duration + 0.04);
-        }
-
-        function scheduleMusicLoop() {
-            clearTimeout(musicTimer);
-            if (!state.running || state.paused || !state.musicEnabled || !audioCtx) return;
-            const note = musicPattern[musicStep % musicPattern.length];
-            playMusicTone(note, audioCtx.currentTime, 0.34);
-            musicStep++;
-            musicTimer = setTimeout(scheduleMusicLoop, 430);
-        }
-
         function startBackgroundMusic() {
             if (!state.musicEnabled || !state.running || state.paused) return;
-            initAudio();
-            scheduleMusicLoop();
+            bgMusic.volume = state.muted ? 0 : 0.36;
+            bgMusic.play().catch(() => {});
         }
 
         function stopBackgroundMusic() {
-            clearTimeout(musicTimer);
-            musicTimer = null;
+            bgMusic.pause();
         }
 
         function updateMusicButtons() {
@@ -1797,11 +1834,18 @@
 
         function updateStats() {
             scoreVal.innerText = state.score;
-            timeVal.innerText = state.timeLeft;
+            timeVal.innerText = state.playMode === 'adventure' ? '∞' : state.timeLeft;
             comboVal.innerText = state.combo;
             levelVal.innerText = state.level;
             missVal.innerText = state.missed;
-            missionVal.innerText = state.mission ? `${state.mission.label} ${state.mission.count}/${state.mission.goal}` : '-';
+            if (state.mission) {
+                const missionText = `${state.mission.label} ${state.mission.count}/${state.mission.goal}`;
+                missionVal.innerText = state.playMode === 'adventure'
+                    ? `第 ${state.level} 關 ${state.adventure.title}｜${missionText}`
+                    : missionText;
+            } else {
+                missionVal.innerText = '-';
+            }
             document.getElementById('stats-board').classList.toggle('age-toddler', state.ageMode === 'toddler');
         }
 
@@ -1839,16 +1883,25 @@
             return choice.emoji;
         }
 
-        function chooseMission(mode) {
+        function chooseMission(mode, goal = ageData[state.ageMode].missionGoal) {
             const modeData = gameData[mode];
             const choice = modeData.items[Math.floor(Math.random() * modeData.items.length)];
             return {
                 key: itemMissionKey(choice, modeData),
                 label: itemLabel(choice, modeData),
                 count: 0,
-                goal: ageData[state.ageMode].missionGoal,
+                goal,
                 complete: false
             };
+        }
+
+        function pickSpawnChoice(modeData) {
+            const missionMatch = state.mission
+                ? modeData.items.find(choice => itemMissionKey(choice, modeData) === state.mission.key)
+                : null;
+            const missionBias = state.playMode === 'adventure' ? 0.55 : 0.38;
+            if (missionMatch && Math.random() < missionBias) return missionMatch;
+            return modeData.items[Math.floor(Math.random() * modeData.items.length)];
         }
 
         function applyAvailablePowerups() {
@@ -1871,6 +1924,7 @@
         }
 
         function resetState(mode) {
+            state.playMode = 'challenge';
             state.mode = mode;
             state.score = 0;
             state.totalSpawn = 0;
@@ -1881,8 +1935,10 @@
             state.timeLeft = ageData[state.ageMode].duration || difficultyData[state.difficulty].duration;
             state.running = true;
             state.paused = false;
+            state.transitioning = false;
             state.lastHitAt = 0;
             state.mission = chooseMission(mode);
+            state.adventure = { active: false, levelIndex: 0, title: '' };
             state.activeItems.clear();
             applyAvailablePowerups();
             state.spawnMs = spawnDelayForLevel(1);
@@ -1900,16 +1956,87 @@
             pauseOverlay.style.display = 'none';
             hud.style.display = 'flex';
             pauseBtn.innerText = '⏸️';
-            musicStep = 0;
             spawnItem();
             scheduleSpawn();
             countdownTimer = setInterval(tickCountdown, 1000);
             startBackgroundMusic();
         }
 
+        function startAdventure() {
+            initAudio();
+            stopTimers();
+            clearItems();
+            state.playMode = 'adventure';
+            state.score = 0;
+            state.totalSpawn = 0;
+            state.missed = 0;
+            state.combo = 0;
+            state.bestCombo = 0;
+            state.running = true;
+            state.paused = false;
+            state.transitioning = false;
+            state.lastHitAt = 0;
+            state.activeItems.clear();
+            state.adventure = { active: true, levelIndex: 0, title: '' };
+            applyAvailablePowerups();
+            configureAdventureLevel(0);
+            menuScreen.style.display = 'none';
+            summaryScreen.style.display = 'none';
+            pauseOverlay.style.display = 'none';
+            hud.style.display = 'flex';
+            pauseBtn.innerText = '⏸️';
+            spawnItem();
+            scheduleSpawn();
+            countdownTimer = setInterval(tickCountdown, 1000);
+            startBackgroundMusic();
+        }
+
+        function adventureGoalFor(level) {
+            const base = level.goal;
+            if (state.ageMode === 'toddler') return Math.max(2, base - 1);
+            if (state.difficulty === 'hard') return base + 1;
+            if (state.difficulty === 'easy') return Math.max(2, base - 1);
+            return base;
+        }
+
+        function configureAdventureLevel(index) {
+            const level = adventureLevels[index];
+            state.mode = level.mode;
+            state.level = index + 1;
+            state.adventure.levelIndex = index;
+            state.adventure.title = level.title;
+            state.mission = chooseMission(level.mode, adventureGoalFor(level));
+            state.timeLeft = 0;
+            state.combo = 0;
+            state.transitioning = false;
+            state.spawnMs = spawnDelayForLevel(state.level);
+            updateSceneTheme(level.mode);
+            updateStats();
+            showToast(encourageToast, `第 ${state.level} 關：${level.title}`);
+        }
+
+        function completeAdventureLevel() {
+            if (!state.running || state.playMode !== 'adventure' || state.transitioning) return;
+            state.transitioning = true;
+            clearTimeout(spawnTimer);
+            clearItems();
+            const isFinal = state.adventure.levelIndex >= adventureLevels.length - 1;
+            showToast(missionToast, isFinal ? '十關完成！' : `第 ${state.level} 關完成！`);
+            setTimeout(() => {
+                if (!state.running || state.playMode !== 'adventure') return;
+                if (isFinal) {
+                    finishGame();
+                    return;
+                }
+                configureAdventureLevel(state.adventure.levelIndex + 1);
+                spawnItem();
+                scheduleSpawn();
+            }, 1100);
+        }
+
         function scheduleSpawn() {
             clearTimeout(spawnTimer);
-            if (!state.running || state.paused) return;
+            if (!state.running || state.paused || state.transitioning) return;
             spawnTimer = setTimeout(() => {
                 spawnItem();
                 scheduleSpawn();
@@ -1917,10 +2044,11 @@
         }
 
         function tickCountdown() {
-            if (!state.running || state.paused) return;
+            if (!state.running || state.paused || state.transitioning) return;
+            if (state.playMode === 'adventure') return;
             state.timeLeft = Math.max(0, state.timeLeft - 1);
             updateStats();
-            if (state.timeLeft <= 0) {
+            if (state.timeLeft <= 0 && state.playMode === 'challenge') {
                 finishGame();
             }
         }
@@ -1943,6 +2071,9 @@
             clearItems();
             state.running = false;
             state.paused = false;
+            state.transitioning = false;
+            state.playMode = 'challenge';
+            state.adventure = { active: false, levelIndex: 0, title: '' };
             updateSceneTheme(null);
             hud.style.display = 'none';
             pauseOverlay.style.display = 'none';
@@ -1958,6 +2089,10 @@
 
         function restartGame() {
             if (!state.mode) return;
+            if (state.playMode === 'adventure') {
+                startAdventure();
+                return;
+            }
             startGame(state.mode);
         }
 
@@ -2010,8 +2145,13 @@
             });
             if (state.running) {
                 state.spawnMs = spawnDelayForLevel(state.level);
+                if (state.playMode === 'adventure') {
+                    const level = adventureLevels[state.adventure.levelIndex];
+                    state.mission.goal = adventureGoalFor(level);
+                }
                 showToast(encourageToast, `${difficultyData[difficulty].label}模式`);
                 scheduleSpawn();
+                updateStats();
             }
         }
 
@@ -2025,9 +2165,16 @@
             });
             updateStats();
             if (state.running) {
-                state.timeLeft = ageData[ageMode].duration || difficultyData[state.difficulty].duration;
+                if (state.playMode === 'adventure') {
+                    const level = adventureLevels[state.adventure.levelIndex];
+                    state.timeLeft = 0;
+                    state.mission.goal = adventureGoalFor(level);
+                } else {
+                    state.timeLeft = ageData[ageMode].duration || difficultyData[state.difficulty].duration;
+                }
                 state.spawnMs = spawnDelayForLevel(state.level);
                 scheduleSpawn();
+                updateStats();
             }
         }
 
@@ -2035,6 +2182,7 @@
             stopTimers();
             state.running = false;
             state.paused = false;
+            state.transitioning = false;
             clearItems();
             const earnedCoins = Math.max(0, state.score);
             profile.coins += earnedCoins;
@@ -2049,12 +2197,16 @@
             finalCombo.innerText = state.bestCombo;
             finalLevel.innerText = state.level;
             finalCoins.innerText = `+${earnedCoins}`;
-            summaryTitle.innerText = state.score >= 40 ? '金色魔法完成！' : '挑戰完成！';
-            summaryMessage.innerText = medals.length
-                ? `解鎖 ${medals.join('、')}！`
-                : state.score >= 40
-                    ? '樂佩的天燈都亮起來了。'
-                    : '再玩一次，下一輪會更亮。';
+            summaryTitle.innerText = state.playMode === 'adventure'
+                ? '十關冒險完成！'
+                : state.score >= 40 ? '金色魔法完成！' : '挑戰完成！';
+            summaryMessage.innerText = state.playMode === 'adventure'
+                ? (medals.length ? `完成旅程，解鎖 ${medals.join('、')}！` : '你完成了整段魔法旅程。')
+                : medals.length
+                    ? `解鎖 ${medals.join('、')}！`
+                    : state.score >= 40
+                        ? '樂佩的天燈都亮起來了。'
+                        : '再玩一次，下一輪會更亮。';
             summaryScreen.style.display = 'flex';
         }
 
@@ -2077,6 +2229,7 @@
         }
 
         function maybeLevelUp() {
+            if (state.playMode === 'adventure') return;
             const nextLevel = levelForScore(state.score);
             if (nextLevel !== state.level) {
                 state.level = nextLevel;
@@ -2092,7 +2245,7 @@
         }
 
         function spawnItem() {
-            if (!state.running || state.paused || !state.mode) return;
+            if (!state.running || state.paused || state.transitioning || !state.mode) return;
 
             const item = document.createElement('div');
             item.classList.add('item');
@@ -2113,18 +2266,18 @@
             let missionKey = '';
 
             if (modeData.type === 'color') {
-                const color = modeData.items[Math.floor(Math.random() * modeData.items.length)];
+                const color = pickSpawnChoice(modeData);
                 item.style.backgroundColor = color;
                 item.classList.add('balloon-style');
                 missionKey = color;
             } else if (modeData.type === 'emoji') {
-                const content = modeData.items[Math.floor(Math.random() * modeData.items.length)];
+                const content = pickSpawnChoice(modeData);
                 item.innerText = content;
                 item.classList.add('emoji-style');
                 item.style.fontSize = `${size * 0.8}px`;
                 missionKey = content;
             } else {
-                const choice = modeData.items[Math.floor(Math.random() * modeData.items.length)];
+                const choice = pickSpawnChoice(modeData);
                 item.innerText = choice.emoji;
                 soundType = choice.sound;
                 item.classList.add('emoji-style');
@@ -2214,6 +2367,7 @@
                 state.mission.complete = true;
                 state.score += state.ageMode === 'toddler' ? 3 : 5;
                 showToast(missionToast, '任務完成！');
+                if (state.playMode === 'adventure') completeAdventureLevel();
             } else {
                 showToast(missionToast, `找到 ${state.mission.label}`);
             }
@@ -2257,6 +2411,9 @@
                 combo: state.combo,
                 bestCombo: state.bestCombo,
                 level: state.level,
+                playMode: state.playMode,
+                adventure: state.adventure,
+                transitioning: state.transitioning,
                 difficulty: state.difficulty,
                 difficultyLabel: difficultyData[state.difficulty].label,
                 ageMode: state.ageMode,
@@ -2286,6 +2443,7 @@
         document.querySelectorAll('.option-btn').forEach(button => {
             button.addEventListener('pointerdown', () => startGame(button.dataset.mode));
         });
+        adventureStartBtn.addEventListener('pointerdown', startAdventure);
         document.querySelectorAll('.difficulty-btn').forEach(button => {
             button.addEventListener('pointerdown', () => setDifficulty(button.dataset.difficulty));
         });

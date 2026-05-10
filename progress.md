@@ -19,6 +19,11 @@ Original prompt: 優先改善這幾個地方也都要實作上去，並推上去
 - Ran mobile layout screenshots for menu/fruit/animal/vehicle and verified menu scrollHeight equals viewport height at 390x844.
 - Ran the develop-web-game Playwright client for V2.4; no console/page errors were reported.
 - Follow-up V2.4 responsive fix: made the home menu scroll-safe at all sizes, desktop uses four mode columns, tablet/mobile use compact panels, and verified mobile/tablet/desktop screenshots.
+- Implemented V2.5 adventure entry: the home screen now starts a 10-level adventure path that advances by mission completion instead of the timed challenge clock, with mode/theme changes and progressively harder goals.
+- Replaced procedural background music with the provided MP3 asset at `assets/audio/where-the-sunbeams-hide.mp3`, controlled by the existing music and mute buttons.
+- Ran the develop-web-game Playwright client for V2.5 against the adventure start; no console/page errors were reported.
+- Ran a V2.5 DOM-specific adventure flow check that completed all 10 levels, verified the summary screen, confirmed the MP3 source/loop/playback state, and reviewed mobile screenshots.
+- Ran V2.5 responsive menu checks at mobile, tablet, and desktop sizes; the menu height matched each viewport without overflow.
 
 ## TODO
 
