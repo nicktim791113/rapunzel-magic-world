@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂佩的魔法世界 V2.1</title>
+    <title>樂佩的魔法世界 V2.2</title>
     <style>
         :root {
             --pink: #E91E63;
@@ -204,6 +204,70 @@
             color: var(--pink);
             font-size: 1.05rem;
             font-weight: 800;
+        }
+
+        .settings-panel {
+            width: min(92vw, 420px);
+            margin-top: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .setting-row {
+            display: grid;
+            gap: 8px;
+            text-align: left;
+        }
+
+        .setting-label {
+            color: #5B4B63;
+            font-size: 0.92rem;
+            font-weight: 800;
+        }
+
+        .segmented {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .seg-btn {
+            min-height: 42px;
+            border: 2px solid rgba(233, 30, 99, 0.25);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #5B4B63;
+            cursor: pointer;
+            font-weight: 900;
+            box-shadow: 0 4px 0 rgba(210, 58, 120, 0.6);
+        }
+
+        .seg-btn.active {
+            color: white;
+            background: linear-gradient(135deg, var(--rose), var(--purple));
+            border-color: transparent;
+        }
+
+        .toggle-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 10px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .toggle-btn {
+            min-width: 86px;
+            min-height: 38px;
+            border: 2px solid rgba(233, 30, 99, 0.25);
+            border-radius: 14px;
+            background: white;
+            color: var(--pink);
+            cursor: pointer;
+            font-weight: 900;
+            box-shadow: 0 4px 0 rgba(210, 58, 120, 0.65);
         }
 
         #hud {
@@ -449,7 +513,7 @@
 
             #control-board {
                 display: grid;
-                grid-template-columns: repeat(2, 34px);
+                grid-template-columns: repeat(3, 34px);
                 gap: 6px;
             }
 
@@ -481,7 +545,7 @@
 
         <div id="menu-screen">
             <h1>樂佩的魔法世界</h1>
-            <p class="subtitle">30 秒魔法挑戰，收集星星、保持連擊！</p>
+            <p class="subtitle">選一個魔法挑戰，收集星星、保持連擊！</p>
             <div class="options-container">
                 <button class="option-btn" data-mode="balloon">
                     <span class="option-icon">🎈</span>
@@ -499,6 +563,20 @@
                     <span class="option-icon">🚂</span>
                     <span class="option-text">車車</span>
                 </button>
+            </div>
+            <div class="settings-panel" aria-label="遊戲設定">
+                <div class="setting-row">
+                    <div class="setting-label">難度</div>
+                    <div class="segmented" role="group" aria-label="難度">
+                        <button class="seg-btn difficulty-btn" data-difficulty="easy">輕鬆</button>
+                        <button class="seg-btn difficulty-btn active" data-difficulty="normal">標準</button>
+                        <button class="seg-btn difficulty-btn" data-difficulty="hard">挑戰</button>
+                    </div>
+                </div>
+                <div class="toggle-line">
+                    <span class="setting-label">背景音樂</span>
+                    <button class="toggle-btn" id="music-menu-btn" aria-label="背景音樂">音樂 開</button>
+                </div>
             </div>
         </div>
 
@@ -533,6 +611,7 @@
             <div id="control-board">
                 <button class="tool-btn" id="pause-btn" title="暫停" aria-label="暫停">⏸️</button>
                 <button class="tool-btn" id="restart-btn" title="重新開始" aria-label="重新開始">🔄</button>
+                <button class="tool-btn" id="music-btn" title="背景音樂" aria-label="背景音樂">🎵</button>
                 <button class="tool-btn" id="mute-btn" title="靜音" aria-label="靜音">🔊</button>
                 <button class="tool-btn" id="back-btn" title="回選單" aria-label="回選單">🏠</button>
             </div>
@@ -572,6 +651,40 @@
         const INITIAL_FALL_MIN = 4300;
         const INITIAL_FALL_MAX = 6800;
         const COMBO_WINDOW_MS = 1250;
+
+        const difficultyData = {
+            easy: {
+                label: '輕鬆',
+                duration: 45,
+                spawnMultiplier: 1.24,
+                fallMultiplier: 1.22,
+                levelStep: 12,
+                levelRamp: 0.82
+            },
+            normal: {
+                label: '標準',
+                duration: 30,
+                spawnMultiplier: 1,
+                fallMultiplier: 1,
+                levelStep: 10,
+                levelRamp: 1
+            },
+            hard: {
+                label: '挑戰',
+                duration: 25,
+                spawnMultiplier: 0.78,
+                fallMultiplier: 0.82,
+                levelStep: 8,
+                levelRamp: 1.18
+            }
+        };
+
+        const musicPattern = [
+            392, 494, 587, 659,
+            587, 494, 440, 392,
+            440, 523, 659, 784,
+            659, 587, 494, null
+        ];
 
         const gameData = {
             balloon: {
@@ -642,6 +755,8 @@
             running: false,
             paused: false,
             muted: false,
+            musicEnabled: true,
+            difficulty: 'normal',
             lastHitAt: 0,
             spawnMs: INITIAL_SPAWN_MS,
             activeItems: new Set()
@@ -651,6 +766,9 @@
         let countdownTimer = null;
         let audioCtx = null;
         let masterGain = null;
+        let musicGain = null;
+        let musicTimer = null;
+        let musicStep = 0;
         let noiseBuffer = null;
 
         const container = document.getElementById('game-container');
@@ -667,6 +785,8 @@
         const encourageToast = document.getElementById('encourage-toast');
         const pauseBtn = document.getElementById('pause-btn');
         const restartBtn = document.getElementById('restart-btn');
+        const musicBtn = document.getElementById('music-btn');
+        const musicMenuBtn = document.getElementById('music-menu-btn');
         const muteBtn = document.getElementById('mute-btn');
         const backBtn = document.getElementById('back-btn');
         const resumeBtn = document.getElementById('resume-btn');
@@ -683,7 +803,10 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 masterGain = audioCtx.createGain();
+                musicGain = audioCtx.createGain();
                 masterGain.gain.value = state.muted ? 0 : 0.24;
+                musicGain.gain.value = 0.12;
+                musicGain.connect(masterGain);
                 masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
@@ -699,6 +822,55 @@
             if (!masterGain || !audioCtx) return;
             const target = state.muted ? 0 : 0.24;
             masterGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.02);
+        }
+
+        function playMusicTone(frequency, startTime, duration) {
+            if (!audioCtx || !musicGain || !frequency) return;
+            const osc = audioCtx.createOscillator();
+            const harmony = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            harmony.type = 'sine';
+            osc.frequency.setValueAtTime(frequency, startTime);
+            harmony.frequency.setValueAtTime(frequency * 2, startTime);
+            osc.connect(gain);
+            harmony.connect(gain);
+            gain.connect(musicGain);
+            gain.gain.setValueAtTime(0.0001, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.26, startTime + 0.025);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+            osc.start(startTime);
+            harmony.start(startTime);
+            osc.stop(startTime + duration + 0.04);
+            harmony.stop(startTime + duration + 0.04);
+        }
+
+        function scheduleMusicLoop() {
+            clearTimeout(musicTimer);
+            if (!state.running || state.paused || !state.musicEnabled || !audioCtx) return;
+            const note = musicPattern[musicStep % musicPattern.length];
+            playMusicTone(note, audioCtx.currentTime, 0.34);
+            musicStep++;
+            musicTimer = setTimeout(scheduleMusicLoop, 430);
+        }
+
+        function startBackgroundMusic() {
+            if (!state.musicEnabled || !state.running || state.paused) return;
+            initAudio();
+            scheduleMusicLoop();
+        }
+
+        function stopBackgroundMusic() {
+            clearTimeout(musicTimer);
+            musicTimer = null;
+        }
+
+        function updateMusicButtons() {
+            const menuText = state.musicEnabled ? '音樂 開' : '音樂 關';
+            musicMenuBtn.innerText = menuText;
+            musicBtn.innerText = state.musicEnabled ? '🎵' : '🎼';
+            musicMenuBtn.setAttribute('aria-pressed', String(state.musicEnabled));
+            musicBtn.setAttribute('aria-pressed', String(state.musicEnabled));
         }
 
         function getNoiseBuffer() {
@@ -913,16 +1085,20 @@
         }
 
         function levelForScore(score) {
-            return Math.min(8, 1 + Math.floor(score / 10));
+            return Math.min(8, 1 + Math.floor(score / difficultyData[state.difficulty].levelStep));
         }
 
         function spawnDelayForLevel(level) {
-            return Math.max(MIN_SPAWN_MS, INITIAL_SPAWN_MS - (level - 1) * 115);
+            const difficulty = difficultyData[state.difficulty];
+            const base = INITIAL_SPAWN_MS * difficulty.spawnMultiplier;
+            const floor = MIN_SPAWN_MS * difficulty.spawnMultiplier;
+            return Math.max(floor, base - (level - 1) * 115 * difficulty.levelRamp);
         }
 
         function fallDurationForLevel(level) {
-            const min = Math.max(2100, INITIAL_FALL_MIN - (level - 1) * 240);
-            const max = Math.max(3400, INITIAL_FALL_MAX - (level - 1) * 260);
+            const difficulty = difficultyData[state.difficulty];
+            const min = Math.max(1800, INITIAL_FALL_MIN * difficulty.fallMultiplier - (level - 1) * 240 * difficulty.levelRamp);
+            const max = Math.max(2900, INITIAL_FALL_MAX * difficulty.fallMultiplier - (level - 1) * 260 * difficulty.levelRamp);
             return min + Math.random() * (max - min);
         }
 
@@ -934,11 +1110,11 @@
             state.combo = 0;
             state.bestCombo = 0;
             state.level = 1;
-            state.timeLeft = GAME_DURATION;
+            state.timeLeft = difficultyData[state.difficulty].duration;
             state.running = true;
             state.paused = false;
             state.lastHitAt = 0;
-            state.spawnMs = INITIAL_SPAWN_MS;
+            state.spawnMs = spawnDelayForLevel(1);
             state.activeItems.clear();
             updateStats();
         }
@@ -953,9 +1129,11 @@
             pauseOverlay.style.display = 'none';
             hud.style.display = 'flex';
             pauseBtn.innerText = '⏸️';
+            musicStep = 0;
             spawnItem();
             scheduleSpawn();
             countdownTimer = setInterval(tickCountdown, 1000);
+            startBackgroundMusic();
         }
 
         function scheduleSpawn() {
@@ -979,6 +1157,7 @@
         function stopTimers() {
             clearTimeout(spawnTimer);
             clearInterval(countdownTimer);
+            stopBackgroundMusic();
             spawnTimer = null;
             countdownTimer = null;
         }
@@ -1020,8 +1199,10 @@
             });
             if (paused) {
                 clearTimeout(spawnTimer);
+                stopBackgroundMusic();
             } else {
                 scheduleSpawn();
+                startBackgroundMusic();
             }
         }
 
@@ -1029,6 +1210,31 @@
             state.muted = !state.muted;
             muteBtn.innerText = state.muted ? '🔇' : '🔊';
             updateMasterVolume();
+        }
+
+        function toggleMusic() {
+            state.musicEnabled = !state.musicEnabled;
+            updateMusicButtons();
+            if (state.musicEnabled && state.running && !state.paused) {
+                startBackgroundMusic();
+            } else {
+                stopBackgroundMusic();
+            }
+        }
+
+        function setDifficulty(difficulty) {
+            if (!difficultyData[difficulty]) return;
+            state.difficulty = difficulty;
+            document.querySelectorAll('.difficulty-btn').forEach(button => {
+                const active = button.dataset.difficulty === difficulty;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            if (state.running) {
+                state.spawnMs = spawnDelayForLevel(state.level);
+                showToast(encourageToast, `${difficultyData[difficulty].label}模式`);
+                scheduleSpawn();
+            }
         }
 
         function finishGame() {
@@ -1216,8 +1422,11 @@
                 combo: state.combo,
                 bestCombo: state.bestCombo,
                 level: state.level,
+                difficulty: state.difficulty,
+                difficultyLabel: difficultyData[state.difficulty].label,
                 missed: state.missed,
                 muted: state.muted,
+                musicEnabled: state.musicEnabled,
                 activeItems: items
             });
         }
@@ -1231,6 +1440,9 @@
         document.querySelectorAll('.option-btn').forEach(button => {
             button.addEventListener('pointerdown', () => startGame(button.dataset.mode));
         });
+        document.querySelectorAll('.difficulty-btn').forEach(button => {
+            button.addEventListener('pointerdown', () => setDifficulty(button.dataset.difficulty));
+        });
         pauseBtn.addEventListener('pointerdown', () => setPaused(!state.paused));
         restartBtn.addEventListener('pointerdown', restartGame);
         backBtn.addEventListener('pointerdown', goBack);
@@ -1238,10 +1450,15 @@
         pauseRestartBtn.addEventListener('pointerdown', restartGame);
         summaryRestartBtn.addEventListener('pointerdown', restartGame);
         summaryMenuBtn.addEventListener('pointerdown', goBack);
+        musicBtn.addEventListener('pointerdown', toggleMusic);
+        musicMenuBtn.addEventListener('pointerdown', toggleMusic);
         muteBtn.addEventListener('pointerdown', toggleMute);
+        updateMusicButtons();
+        setDifficulty(state.difficulty);
 
         document.addEventListener('keydown', (event) => {
             if (event.key.toLowerCase() === 'm') toggleMute();
+            if (event.key.toLowerCase() === 'b') toggleMusic();
             if (event.key.toLowerCase() === 'p') setPaused(!state.paused);
             if (event.key.toLowerCase() === 'r') restartGame();
         });
