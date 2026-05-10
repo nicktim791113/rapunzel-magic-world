@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂佩的魔法世界 V2.3</title>
+    <title>樂佩的魔法世界 V2.4</title>
     <style>
         :root {
             --pink: #E91E63;
@@ -114,6 +114,97 @@
             50% { translate: 0 -16px; }
         }
 
+        .scene-sun,
+        .scene-cloud,
+        .scene-hills,
+        .scene-fence,
+        .scene-sign {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .scene-sun {
+            top: 7vh;
+            right: 9vw;
+            width: clamp(74px, 10vw, 120px);
+            height: clamp(74px, 10vw, 120px);
+            border-radius: 50%;
+            background: radial-gradient(circle, #FFF7B0 0 22%, #FFD36E 52%, rgba(255, 183, 77, 0) 72%);
+            opacity: 0.84;
+            filter: blur(0.2px);
+        }
+
+        .scene-cloud {
+            width: 150px;
+            height: 52px;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 24% 48%, rgba(255,255,255,0.92) 0 30px, transparent 31px),
+                radial-gradient(circle at 52% 34%, rgba(255,255,255,0.96) 0 42px, transparent 43px),
+                radial-gradient(circle at 78% 52%, rgba(255,255,255,0.9) 0 28px, transparent 29px);
+            opacity: 0.72;
+            filter: blur(0.3px);
+        }
+
+        .cloud-a { top: 12vh; left: 24vw; transform: scale(0.9); }
+        .cloud-b { top: 21vh; right: 18vw; transform: scale(0.72); opacity: 0.58; }
+
+        .scene-hills {
+            left: -8vw;
+            right: -8vw;
+            bottom: 28vh;
+            height: 23vh;
+            background:
+                radial-gradient(80% 76% at 18% 100%, rgba(97, 174, 96, 0.46) 0 54%, transparent 55%),
+                radial-gradient(76% 72% at 58% 100%, rgba(72, 154, 116, 0.38) 0 58%, transparent 59%),
+                radial-gradient(70% 80% at 88% 100%, rgba(117, 188, 105, 0.36) 0 56%, transparent 57%);
+        }
+
+        .scene-fence {
+            left: 0;
+            right: 0;
+            bottom: 24vh;
+            height: 42px;
+            opacity: 0.55;
+            background:
+                linear-gradient(#B8894A 0 9px, transparent 9px 100%) 0 11px / 100% 22px repeat-x,
+                repeating-linear-gradient(90deg, transparent 0 38px, #A46A35 38px 48px, transparent 48px 70px);
+        }
+
+        .scene-sign {
+            display: none;
+            right: 13vw;
+            bottom: 28vh;
+            width: 72px;
+            height: 48px;
+            border-radius: 12px;
+            background: #FFE8A3;
+            border: 5px solid #B87935;
+            box-shadow: 0 10px 0 rgba(83, 74, 52, 0.12);
+        }
+
+        .scene-sign::before {
+            content: "";
+            position: absolute;
+            left: 28px;
+            bottom: -58px;
+            width: 12px;
+            height: 58px;
+            border-radius: 8px;
+            background: #94612F;
+        }
+
+        .scene-sign::after {
+            content: "GO";
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: #5C6670;
+            font-weight: 900;
+        }
+
         #menu-screen,
         #summary-screen,
         #pause-overlay {
@@ -131,6 +222,7 @@
         #menu-screen {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(4px);
+            gap: 0;
         }
 
         #summary-screen,
@@ -209,9 +301,9 @@
 
         .settings-panel {
             width: min(92vw, 420px);
-            margin-top: 18px;
+            margin-top: 14px;
             display: grid;
-            gap: 12px;
+            gap: 10px;
         }
 
         .setting-row {
@@ -279,13 +371,13 @@
             width: min(92vw, 720px);
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 14px;
+            gap: 10px;
+            margin-top: 12px;
         }
 
         .mini-panel {
-            min-height: 86px;
-            padding: 12px;
+            min-height: 74px;
+            padding: 10px;
             border-radius: 16px;
             background: rgba(255, 255, 255, 0.76);
             box-shadow: 0 8px 18px rgba(107, 54, 114, 0.1);
@@ -323,13 +415,13 @@
         }
 
         .shop-card {
-            flex: 1 1 140px;
+            flex: 1 1 128px;
         }
 
         .shop-card button {
             width: 100%;
-            margin-top: 6px;
-            min-height: 34px;
+            margin-top: 5px;
+            min-height: 32px;
             border: 0;
             border-radius: 12px;
             background: var(--rose);
@@ -442,20 +534,19 @@
 
         .theme-fruit {
             background:
-                radial-gradient(circle at 18% 28%, rgba(255, 94, 87, 0.35) 0 22px, transparent 23px),
-                radial-gradient(circle at 72% 20%, rgba(255, 214, 102, 0.44) 0 18px, transparent 19px),
-                linear-gradient(180deg, #BDEBFF 0%, #FFE6A3 68%, #B7E06B 68%, #58B85F 100%);
+                linear-gradient(180deg, rgba(255,255,255,0.36) 0 18%, transparent 38%),
+                linear-gradient(180deg, #BDEBFF 0%, #FFE3A6 64%, #B7E06B 64%, #58B85F 100%);
         }
 
         .theme-animal {
             background:
-                radial-gradient(circle at 20% 24%, rgba(255,255,255,0.65) 0 28px, transparent 29px),
-                linear-gradient(180deg, #B7ECFF 0%, #FBE4A6 66%, #C8DE78 66%, #6ABA6A 100%);
+                linear-gradient(180deg, rgba(255,255,255,0.28) 0 20%, transparent 42%),
+                linear-gradient(180deg, #B7ECFF 0%, #FBE4A6 62%, #C8DE78 62%, #6ABA6A 100%);
         }
 
         .theme-vehicle {
             background:
-                linear-gradient(180deg, #9CD9FF 0%, #FFE6A8 64%, #7CC66E 64%, #459252 100%);
+                linear-gradient(180deg, #9CD9FF 0%, #FFE6A8 60%, #7CC66E 60%, #459252 100%);
         }
 
         .theme-balloon {
@@ -474,7 +565,8 @@
 
         .theme-fruit .fruit-tree,
         .theme-animal .zoo-prop,
-        .theme-vehicle .road-prop {
+        .theme-vehicle .road-prop,
+        .theme-vehicle .scene-sign {
             display: block;
         }
 
@@ -501,6 +593,13 @@
             height: 74px;
             border-radius: 14px;
             background: linear-gradient(90deg, #A66A3E, #C68642);
+        }
+
+        .fruit-tree.tree-small {
+            right: 20vw;
+            bottom: 22vh;
+            transform: scale(0.7);
+            opacity: 0.78;
         }
 
         .zoo-prop {
@@ -533,9 +632,12 @@
             bottom: 0;
             width: 58vw;
             height: 28vh;
-            background: #5C6670;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.18), transparent 30%),
+                #5C6670;
             transform: skewX(-18deg);
             border-left: 12px solid rgba(255,255,255,0.5);
+            box-shadow: inset 0 18px 0 rgba(255,255,255,0.12);
         }
 
         .road-prop::after {
@@ -697,18 +799,133 @@
             #menu-screen {
                 justify-content: flex-start;
                 overflow-y: auto;
+                padding: 10px 16px 14px;
             }
 
             h1 {
-                margin-top: 16px;
+                margin-top: 10px;
+                font-size: 1.8rem;
+            }
+
+            .subtitle {
+                font-size: 0.88rem;
+                margin-bottom: 10px;
+            }
+
+            .options-container {
+                width: 100%;
+                gap: 10px;
+            }
+
+            .option-btn {
+                min-height: 78px;
+                border-radius: 15px;
+                box-shadow: 0 4px 0 #D23A78, 0 10px 18px rgba(107, 54, 114, 0.12);
+            }
+
+            .option-icon {
+                font-size: 2rem;
+                margin-bottom: 4px;
+            }
+
+            .option-text {
+                font-size: 0.94rem;
+            }
+
+            .settings-panel {
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .toggle-line {
+                grid-column: 1 / -1;
+                padding: 5px 8px;
+            }
+
+            .segmented {
+                gap: 5px;
+            }
+
+            .seg-btn {
+                min-height: 34px;
+                border-radius: 12px;
+                font-size: 0.88rem;
+                box-shadow: 0 3px 0 rgba(210, 58, 120, 0.6);
+            }
+
+            .setting-label {
+                font-size: 0.82rem;
             }
 
             .menu-panels {
-                grid-template-columns: 1fr;
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .mini-panel {
+                min-height: 58px;
+                padding: 8px;
+                border-radius: 14px;
+            }
+
+            .mini-panel-title {
+                margin-bottom: 5px;
+                font-size: 0.88rem;
+            }
+
+            .badge-row,
+            .leaderboard-list,
+            .shop-grid {
+                gap: 5px;
+            }
+
+            .badge-pill,
+            .leader-pill,
+            .shop-card {
+                padding: 5px 7px;
+                border-radius: 11px;
+                font-size: 0.76rem;
+            }
+
+            .shop-card {
+                flex: 1 1 98px;
+            }
+
+            .shop-card small {
+                display: none;
+            }
+
+            .shop-card button {
+                min-height: 28px;
+                font-size: 0.78rem;
+                border-radius: 10px;
             }
 
             .summary-score {
                 grid-template-columns: repeat(2, minmax(72px, 1fr));
+            }
+
+            .fruit-tree {
+                right: -3vw;
+                transform: scale(0.82);
+            }
+
+            .fruit-tree.tree-small {
+                right: 24vw;
+                transform: scale(0.55);
+            }
+
+            .zoo-prop {
+                right: 3vw;
+                transform: scale(0.82);
+            }
+
+            .road-prop {
+                width: 70vw;
             }
 
             #hud {
@@ -757,11 +974,18 @@
 </head>
 <body>
     <div id="game-container">
+        <div class="scene-sun" aria-hidden="true"></div>
+        <div class="scene-cloud cloud-a" aria-hidden="true"></div>
+        <div class="scene-cloud cloud-b" aria-hidden="true"></div>
+        <div class="scene-hills" aria-hidden="true"></div>
+        <div class="scene-fence" aria-hidden="true"></div>
+        <div class="scene-sign" aria-hidden="true"></div>
         <div class="tower-roof" aria-hidden="true"></div>
         <div class="lantern" aria-hidden="true"></div>
         <div class="lantern" aria-hidden="true"></div>
         <div class="lantern" aria-hidden="true"></div>
         <div class="scene-prop fruit-tree" aria-hidden="true"></div>
+        <div class="scene-prop fruit-tree tree-small" aria-hidden="true"></div>
         <div class="scene-prop zoo-prop" aria-hidden="true"></div>
         <div class="scene-prop road-prop" aria-hidden="true"></div>
 

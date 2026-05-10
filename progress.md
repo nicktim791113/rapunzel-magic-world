@@ -15,6 +15,9 @@ Original prompt: 優先改善這幾個地方也都要實作上去，並推上去
 - Ran the develop-web-game Playwright client for V2.3; no console/page errors were reported.
 - Ran V2.3 DOM-specific Playwright check covering shop purchases, auto-applied powerups, child/hard mode, mission completion, coins, medals, leaderboard, summary, and toddler mode.
 - Reviewed mobile menu/game/summary/toddler screenshots.
+- Implemented V2.4 layout/background pass: compressed the mobile home panel to fit the first viewport and added richer scene depth with sun, clouds, hills, fence, orchard trees, zoo prop, road, and sign.
+- Ran mobile layout screenshots for menu/fruit/animal/vehicle and verified menu scrollHeight equals viewport height at 390x844.
+- Ran the develop-web-game Playwright client for V2.4; no console/page errors were reported.
 
 ## TODO
 
