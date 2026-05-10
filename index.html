@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂佩的魔法世界 V2.6</title>
+    <title>樂佩的魔法世界 V2.7</title>
     <style>
         :root {
             --pink: #E91E63;
@@ -531,6 +531,35 @@
             font-weight: 700;
         }
 
+        .mission-stat {
+            min-width: 96px;
+        }
+
+        #mission-val {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mission-target-icon {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            display: inline-block;
+            background-image: var(--sprite-image);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            filter: drop-shadow(0 5px 5px rgba(48, 38, 54, 0.16));
+            animation: missionPulse 1.45s ease-in-out infinite;
+        }
+
+        .mission-count {
+            min-width: 28px;
+            color: #0C7C59;
+            font-weight: 900;
+        }
+
         .tool-btn {
             width: 44px;
             height: 40px;
@@ -704,6 +733,11 @@
             100% { opacity: 0; scale: 0.95; }
         }
 
+        @keyframes missionPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
         .item {
             position: absolute;
             cursor: pointer;
@@ -717,6 +751,7 @@
             z-index: 10;
             touch-action: none;
             will-change: transform;
+            overflow: visible;
         }
 
         .sprite-style {
@@ -1089,6 +1124,19 @@
                 font-size: 0.82rem;
             }
 
+            .mission-stat {
+                min-width: 80px;
+            }
+
+            .mission-target-icon {
+                width: 28px;
+                height: 28px;
+            }
+
+            .mission-count {
+                min-width: 24px;
+            }
+
             .stat-label {
                 display: none;
             }
@@ -1277,9 +1325,8 @@
                     <span class="stat-label">飄走</span>
                     <span id="miss-val">0</span>
                 </div>
-                <div class="stat-item challenge-stat" style="color:#0C7C59;">
+                <div class="stat-item mission-stat" style="color:#0C7C59;">
                     <span>🎯</span>
-                    <span class="stat-label">任務</span>
                     <span id="mission-val">-</span>
                 </div>
             </div>
@@ -1906,15 +1953,31 @@
             comboVal.innerText = state.combo;
             levelVal.innerText = state.level;
             missVal.innerText = state.missed;
-            if (state.mission) {
-                const missionText = `${state.mission.label} ${state.mission.count}/${state.mission.goal}`;
-                missionVal.innerText = state.playMode === 'adventure'
-                    ? `第 ${state.level} 關 ${state.adventure.title}｜${missionText}`
-                    : missionText;
-            } else {
-                missionVal.innerText = '-';
-            }
+            renderMissionTarget();
             document.getElementById('stats-board').classList.toggle('age-toddler', state.ageMode === 'toddler');
+        }
+
+        function renderMissionTarget() {
+            missionVal.replaceChildren();
+            if (!state.mission) {
+                missionVal.innerText = '-';
+                missionVal.removeAttribute('aria-label');
+                return;
+            }
+
+            const sprite = spriteCellForKey(state.mission.key);
+            if (sprite) {
+                const icon = document.createElement('span');
+                icon.className = 'mission-target-icon';
+                icon.style.setProperty('--sprite-image', `url("${sprite.file}")`);
+                missionVal.appendChild(icon);
+            }
+
+            const count = document.createElement('span');
+            count.className = 'mission-count';
+            count.innerText = `${state.mission.count}/${state.mission.goal}`;
+            missionVal.appendChild(count);
+            missionVal.setAttribute('aria-label', `任務目標 ${state.mission.label} ${state.mission.count}/${state.mission.goal}`);
         }
 
         function levelForScore(score) {
@@ -2340,13 +2403,16 @@
             state.activeItems.add(item);
 
             const size = 68 + Math.random() * 38;
-            item.style.width = `${size}px`;
-            item.style.height = `${size}px`;
+            const itemWidth = state.mode === 'vehicle' ? size * 1.34 : size;
+            const itemHeight = state.mode === 'vehicle' ? size * 0.96 : size;
+            item.style.width = `${itemWidth}px`;
+            item.style.height = `${itemHeight}px`;
 
-            const maxX = Math.max(0, window.innerWidth - size - 24);
+            const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
             const startX = 12 + Math.random() * maxX;
+            const startY = state.mode === 'vehicle' ? Math.max(112, window.innerHeight * 0.12) : -itemHeight;
             item.style.left = `${startX}px`;
-            item.style.top = `-${size}px`;
+            item.style.top = `${startY}px`;
 
             const modeData = gameData[state.mode];
             let soundType = 'default';
@@ -2381,7 +2447,7 @@
             }
             item._missionKey = missionKey;
 
-            const endY = window.innerHeight - size - 22;
+            const endY = window.innerHeight - itemHeight - 22;
             const animation = item.animate([
                 { transform: 'translateY(0px) rotate(0deg)' },
                 { transform: `translateY(${window.innerHeight}px) rotate(${state.mode === 'vehicle' ? 0 : (Math.random() * 60 - 30)}deg)` }
@@ -2406,7 +2472,7 @@
             };
 
             item.addEventListener('pointerdown', (event) => {
-                handleInteract(event, item, soundType, size, modeData);
+                handleInteract(event, item, soundType, Math.max(itemWidth, itemHeight), modeData);
             });
 
             container.appendChild(item);
