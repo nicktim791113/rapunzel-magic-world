@@ -24,7 +24,13 @@ Original prompt: 優先改善這幾個地方也都要實作上去，並推上去
 - Ran the develop-web-game Playwright client for V2.5 against the adventure start; no console/page errors were reported.
 - Ran a V2.5 DOM-specific adventure flow check that completed all 10 levels, verified the summary screen, confirmed the MP3 source/loop/playback state, and reviewed mobile screenshots.
 - Ran V2.5 responsive menu checks at mobile, tablet, and desktop sizes; the menu height matched each viewport without overflow.
+- Generated a V2.6 4x4 falling-object sheet with the built-in image generation tool, removed the chroma-key background, split it into 16 clean transparent PNG assets under `assets/images/items/`, and removed small cross-cell artifacts.
+- Updated dropped items to use the new image assets with CSS animations for balloons, fruit, animals, and vehicles.
+- Ran the develop-web-game Playwright client for V2.6 and reviewed gameplay screenshots showing the new rendered falling objects.
+- Ran V2.6 sprite asset checks across balloon, fruit, animal, and vehicle modes; all 16 PNG assets decoded successfully and each mode reported sprite-backed active items.
+- Ran a V2.6 adventure flow check through all 10 levels; summary screen reached successfully with no console/page errors.
 
 ## TODO
 
+- Future idea: add a second sprite sheet with per-object animation frames if true frame-by-frame GIF-style movement is needed.
 - Future idea: add real recorded voice/audio assets if synthetic sounds are not warm enough for the target child.

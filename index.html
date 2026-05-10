@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>樂佩的魔法世界 V2.5</title>
+    <title>樂佩的魔法世界 V2.6</title>
     <style>
         :root {
             --pink: #E91E63;
@@ -710,12 +710,76 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
-            padding: 10px;
+            padding: 4px;
             z-index: 10;
             touch-action: none;
             will-change: transform;
+        }
+
+        .sprite-style {
+            filter: drop-shadow(0 12px 12px rgba(48, 38, 54, 0.18));
+        }
+
+        .sprite-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+            background-image: var(--sprite-image);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            transform-origin: center;
+            animation: spriteBreathe 1.4s ease-in-out infinite;
+        }
+
+        .sprite-balloon .sprite-image {
+            animation-name: spriteFloat;
+            animation-duration: 1.9s;
+        }
+
+        .sprite-fruit .sprite-image {
+            animation-name: spriteWiggle;
+            animation-duration: 1.55s;
+        }
+
+        .sprite-animal .sprite-image {
+            animation-name: spriteHello;
+            animation-duration: 1.75s;
+        }
+
+        .sprite-vehicle .sprite-image {
+            animation-name: spriteDrive;
+            animation-duration: 0.78s;
+        }
+
+        @keyframes spriteBreathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.045); }
+        }
+
+        @keyframes spriteFloat {
+            0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+            50% { transform: translateY(-4px) rotate(2deg) scale(1.03); }
+        }
+
+        @keyframes spriteWiggle {
+            0%, 100% { transform: rotate(-3deg) scale(1); }
+            50% { transform: rotate(3deg) scale(1.04); }
+        }
+
+        @keyframes spriteHello {
+            0%, 100% { transform: translateY(0) scale(1); }
+            45% { transform: translateY(-2px) scale(1.055); }
+            65% { transform: translateY(1px) scale(0.99); }
+        }
+
+        @keyframes spriteDrive {
+            0%, 100% { transform: translateX(-1px) rotate(-1deg); }
+            50% { transform: translateX(2px) rotate(1deg); }
         }
 
         .balloon-style {
@@ -1328,12 +1392,27 @@
         const STORAGE_KEY = 'rapunzelMagicWorldV23';
         const colorLabels = {
             '#FF6B6B': '紅氣球',
-            '#4ECDC4': '藍綠氣球',
-            '#FFE66D': '黃氣球',
-            '#FF9F43': '橘氣球',
             '#54A0FF': '藍氣球',
-            '#FF9FF3': '粉氣球',
-            '#A3CB38': '綠氣球'
+            '#FF9FF3': '紫氣球'
+        };
+
+        const spriteAssets = {
+            '#FF6B6B': { file: 'assets/images/items/balloon-red.png', group: 'balloon', label: '紅氣球' },
+            '#54A0FF': { file: 'assets/images/items/balloon-blue.png', group: 'balloon', label: '藍氣球' },
+            '#FF9FF3': { file: 'assets/images/items/balloon-purple.png', group: 'balloon', label: '紫氣球' },
+            '🍎': { file: 'assets/images/items/fruit-apple.png', group: 'fruit', label: '蘋果' },
+            '🍌': { file: 'assets/images/items/fruit-banana.png', group: 'fruit', label: '香蕉' },
+            '🍇': { file: 'assets/images/items/fruit-grapes.png', group: 'fruit', label: '葡萄' },
+            '🍓': { file: 'assets/images/items/fruit-strawberry.png', group: 'fruit', label: '草莓' },
+            '🦁': { file: 'assets/images/items/animal-lion.png', group: 'animal', label: '獅子' },
+            '🐶': { file: 'assets/images/items/animal-dog.png', group: 'animal', label: '小狗' },
+            '🐱': { file: 'assets/images/items/animal-cat.png', group: 'animal', label: '小貓' },
+            '🐘': { file: 'assets/images/items/animal-elephant.png', group: 'animal', label: '大象' },
+            '🚗': { file: 'assets/images/items/vehicle-car.png', group: 'vehicle', label: '小汽車' },
+            '🚌': { file: 'assets/images/items/vehicle-bus.png', group: 'vehicle', label: '校車' },
+            '🚂': { file: 'assets/images/items/vehicle-train.png', group: 'vehicle', label: '火車' },
+            '🚀': { file: 'assets/images/items/vehicle-rocket.png', group: 'vehicle', label: '火箭' },
+            '🚲': { file: 'assets/images/items/vehicle-bike.png', group: 'vehicle', label: '腳踏車' }
         };
 
         const gameData = {
@@ -1341,7 +1420,7 @@
                 label: '氣球',
                 type: 'color',
                 missClass: 'miss-balloon',
-                items: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#FF9F43', '#54A0FF', '#FF9FF3', '#A3CB38'],
+                items: ['#FF6B6B', '#54A0FF', '#FF9FF3'],
                 popText: '✨',
                 encouragements: ['氣球飛出魔法光！', '漂亮的顏色！', '樂佩看到了星星！']
             },
@@ -1349,7 +1428,7 @@
                 label: '水果',
                 type: 'emoji',
                 missClass: 'miss-fruit',
-                items: ['🍎', '🍌', '🍇', '🍉', '🍓', '🍑', '🍍', '🥝', '🍒', '🥭', '🍐'],
+                items: ['🍎', '🍌', '🍇', '🍓'],
                 popText: 'Yum!',
                 encouragements: ['水果籃滿滿的！', '甜甜的魔法！', '好快的反應！']
             },
@@ -1360,13 +1439,7 @@
                 items: [
                     { emoji: '🐶', sound: 'dog' },
                     { emoji: '🐱', sound: 'cat' },
-                    { emoji: '🦆', sound: 'duck' },
-                    { emoji: '🐷', sound: 'pig' },
-                    { emoji: '🐸', sound: 'frog' },
                     { emoji: '🦁', sound: 'lion' },
-                    { emoji: '🐮', sound: 'cow' },
-                    { emoji: '🐑', sound: 'sheep' },
-                    { emoji: '🐵', sound: 'monkey' },
                     { emoji: '🐘', sound: 'elephant' }
                 ],
                 popText: '❤',
@@ -1379,12 +1452,7 @@
                 items: [
                     { emoji: '🚗', sound: 'car' },
                     { emoji: '🚌', sound: 'car' },
-                    { emoji: '🚕', sound: 'car' },
-                    { emoji: '🚑', sound: 'siren' },
-                    { emoji: '🚒', sound: 'siren' },
-                    { emoji: '🚓', sound: 'siren' },
                     { emoji: '🚂', sound: 'train' },
-                    { emoji: '✈️', sound: 'plane' },
                     { emoji: '🚀', sound: 'plane' },
                     { emoji: '🚲', sound: 'bike' }
                 ],
@@ -1878,9 +1946,28 @@
         }
 
         function itemLabel(choice, modeData) {
+            const sprite = spriteCellForKey(itemMissionKey(choice, modeData));
+            if (sprite) return sprite.label;
             if (modeData.type === 'color') return colorLabels[choice] || '彩色氣球';
             if (typeof choice === 'string') return choice;
             return choice.emoji;
+        }
+
+        function spriteCellForKey(key) {
+            return spriteAssets[key] || null;
+        }
+
+        function applySpriteAsset(item, key) {
+            const sprite = spriteCellForKey(key);
+            if (!sprite) return false;
+            const image = document.createElement('span');
+            image.className = 'sprite-image';
+            image.style.setProperty('--sprite-image', `url("${sprite.file}")`);
+            item.classList.add('sprite-style', `sprite-${sprite.group}`);
+            item.dataset.label = sprite.label;
+            item.dataset.spriteKey = key;
+            item.appendChild(image);
+            return true;
         }
 
         function chooseMission(mode, goal = ageData[state.ageMode].missionGoal) {
@@ -2264,25 +2351,33 @@
             const modeData = gameData[state.mode];
             let soundType = 'default';
             let missionKey = '';
+            let fallbackText = '';
+            let fallbackColor = '';
 
             if (modeData.type === 'color') {
                 const color = pickSpawnChoice(modeData);
-                item.style.backgroundColor = color;
-                item.classList.add('balloon-style');
                 missionKey = color;
+                fallbackColor = color;
             } else if (modeData.type === 'emoji') {
                 const content = pickSpawnChoice(modeData);
-                item.innerText = content;
-                item.classList.add('emoji-style');
-                item.style.fontSize = `${size * 0.8}px`;
                 missionKey = content;
+                fallbackText = content;
             } else {
                 const choice = pickSpawnChoice(modeData);
-                item.innerText = choice.emoji;
                 soundType = choice.sound;
-                item.classList.add('emoji-style');
-                item.style.fontSize = `${size * 0.8}px`;
                 missionKey = choice.emoji;
+                fallbackText = choice.emoji;
+            }
+
+            if (!applySpriteAsset(item, missionKey)) {
+                if (fallbackColor) {
+                    item.style.backgroundColor = fallbackColor;
+                    item.classList.add('balloon-style');
+                } else {
+                    item.innerText = fallbackText;
+                    item.classList.add('emoji-style');
+                    item.style.fontSize = `${size * 0.8}px`;
+                }
             }
             item._missionKey = missionKey;
 
@@ -2396,7 +2491,8 @@
             const items = [...document.querySelectorAll('.item')].slice(0, 8).map((item) => {
                 const rect = item.getBoundingClientRect();
                 return {
-                    text: item.innerText || item.style.backgroundColor || 'balloon',
+                    text: item.dataset.label || item.innerText || item.style.backgroundColor || 'balloon',
+                    spriteKey: item.dataset.spriteKey || '',
                     x: Math.round(rect.left + rect.width / 2),
                     y: Math.round(rect.top + rect.height / 2),
                     size: Math.round(rect.width)
