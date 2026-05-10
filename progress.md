@@ -11,6 +11,10 @@ Original prompt: 優先改善這幾個地方也都要實作上去，並推上去
 - Ran the develop-web-game Playwright client for V2.2; no console/page errors were reported.
 - Ran a V2.2 DOM-specific Playwright check covering hard difficulty, menu/game music toggles, mute, pause/resume, restart preserving difficulty, and timer summary.
 - Reviewed mobile menu/game/pause/summary screenshots.
+- Implemented V2.3 feature set: toddler/child age modes, medals, localStorage profile/leaderboard, shop items, speech encouragement, per-mode missions, and mode-specific storybook backgrounds.
+- Ran the develop-web-game Playwright client for V2.3; no console/page errors were reported.
+- Ran V2.3 DOM-specific Playwright check covering shop purchases, auto-applied powerups, child/hard mode, mission completion, coins, medals, leaderboard, summary, and toddler mode.
+- Reviewed mobile menu/game/summary/toddler screenshots.
 
 ## TODO
 
