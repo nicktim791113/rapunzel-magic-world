@@ -36,6 +36,9 @@ Original prompt: 優先改善這幾個地方也都要實作上去，並推上去
 - Ran a V2.7 DOM check confirming mission targets use an image icon with only progress text, vehicle item boxes are wider than tall, vehicle items start below the HUD area, and the 10-level adventure still reaches summary.
 - Implemented V2.8 home improvements: copied the provided `The_Glade_at_Dawn.mp3` into `assets/audio/the-glade-at-dawn.mp3`, added it as the homepage music track, and added a home screen difficulty/age-mode explanation dialog.
 - Ran the develop-web-game Playwright client for V2.8 and reviewed desktop menu/guide screenshots; then ran a DOM-specific Playwright check covering guide open/close, music off/on, home-to-game music handoff, returning home, two-track audio inventory, and mobile menu/guide layout.
+- Implemented V2.9 PWA support: added manifest metadata, iPhone/iPad home-screen tags, generated app icons, registered a service worker, and cached the game shell/assets for installable use.
+- Ran the develop-web-game Playwright client for V2.9 and reviewed mobile PWA screenshots; ran a PWA-specific Playwright check verifying manifest metadata, app icons, service worker control, cached app shell assets, offline menu reload, and offline range responses for cached audio.
+- Ran V2.9 layout fit checks across iPhone 390x844, iPhone Pro Max 430x932, iPad 820x1180, iPad landscape 1180x820, and desktop 1366x768; captured menu/guide/game screenshots and confirmed no horizontal overflow, text overflow, key element clipping, or HUD overlap.
 
 ## TODO
 
