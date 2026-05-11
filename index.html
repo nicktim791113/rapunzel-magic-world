@@ -235,6 +235,86 @@
             backdrop-filter: blur(5px);
         }
 
+        #guide-modal {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 180;
+            padding: 18px;
+            background: rgba(45, 28, 60, 0.32);
+            backdrop-filter: blur(5px);
+        }
+
+        .guide-dialog {
+            position: relative;
+            width: min(92vw, 720px);
+            max-height: min(86vh, 680px);
+            overflow: auto;
+            padding: 22px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 18px 42px rgba(57, 38, 72, 0.22);
+            text-align: left;
+        }
+
+        .guide-dialog h2 {
+            margin-right: 46px;
+            margin-bottom: 8px;
+        }
+
+        .guide-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 38px;
+            height: 38px;
+        }
+
+        .guide-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .guide-section {
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 246, 216, 0.72);
+            border: 2px solid rgba(233, 30, 99, 0.12);
+        }
+
+        .guide-section h3 {
+            margin: 0 0 10px;
+            color: var(--purple);
+            font-size: 1.05rem;
+        }
+
+        .guide-section p,
+        .guide-section li {
+            color: #5B4B63;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .guide-section p {
+            margin: 0 0 8px;
+        }
+
+        .guide-section ul {
+            margin: 0;
+            padding-left: 1.2em;
+        }
+
+        .guide-note {
+            margin: 14px 0 0;
+            color: #0C7C59;
+            font-weight: 900;
+            text-align: center;
+        }
+
         h1 {
             color: var(--purple);
             font-size: clamp(1.9rem, 4vw, 3rem);
@@ -336,10 +416,10 @@
         }
 
         .settings-panel {
-            width: min(92vw, 760px);
+            width: min(92vw, 860px);
             margin-top: 10px;
             display: grid;
-            grid-template-columns: 1.2fr 0.9fr 0.9fr;
+            grid-template-columns: 1.2fr 0.9fr 0.8fr 0.8fr;
             gap: 10px;
         }
 
@@ -400,6 +480,10 @@
             cursor: pointer;
             font-weight: 900;
             box-shadow: 0 4px 0 rgba(210, 58, 120, 0.65);
+        }
+
+        .info-btn {
+            color: var(--purple);
         }
 
         .age-segmented {
@@ -1002,8 +1086,24 @@
             }
 
             .toggle-line {
-                grid-column: 1 / -1;
                 padding: 5px 8px;
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: center;
+                gap: 5px;
+            }
+
+            .toggle-btn {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .guide-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guide-dialog {
+                padding: 18px;
             }
 
             .segmented {
@@ -1202,6 +1302,11 @@
                 padding: 5px 8px;
             }
 
+            .guide-section p,
+            .guide-section li {
+                font-size: 0.9rem;
+            }
+
             .mini-panel {
                 min-height: 58px;
                 padding: 8px;
@@ -1219,6 +1324,7 @@
 </head>
 <body>
     <div id="game-container">
+        <audio id="menu-music" src="assets/audio/the-glade-at-dawn.mp3" loop preload="auto" playsinline></audio>
         <audio id="bg-music" src="assets/audio/where-the-sunbeams-hide.mp3" loop preload="auto" playsinline></audio>
         <div class="scene-sun" aria-hidden="true"></div>
         <div class="scene-cloud cloud-a" aria-hidden="true"></div>
@@ -1279,6 +1385,10 @@
                 <div class="toggle-line">
                     <span class="setting-label">背景音樂</span>
                     <button class="toggle-btn" id="music-menu-btn" aria-label="背景音樂">音樂 開</button>
+                </div>
+                <div class="toggle-line">
+                    <span class="setting-label">模式說明</span>
+                    <button class="toggle-btn info-btn" id="guide-btn" aria-label="開啟模式說明" aria-haspopup="dialog" aria-expanded="false">說明</button>
                 </div>
             </div>
             <div class="menu-panels">
@@ -1364,6 +1474,33 @@
             <div class="summary-actions">
                 <button class="primary-btn" id="summary-restart-btn">再玩一次</button>
                 <button class="primary-btn" id="summary-menu-btn">換模式</button>
+            </div>
+        </div>
+
+        <div id="guide-modal" aria-hidden="true">
+            <div class="guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+                <button class="tool-btn guide-close" id="guide-close-btn" title="關閉說明" aria-label="關閉說明">✕</button>
+                <h2 id="guide-title">難度與年齡模式</h2>
+                <p class="subtitle">兩個選項可以搭配使用：難度調整挑戰強度，年齡模式調整玩法友善程度。</p>
+                <div class="guide-grid">
+                    <section class="guide-section">
+                        <h3>難度</h3>
+                        <ul>
+                            <li>輕鬆：45 秒，物件較慢，12 分升關。</li>
+                            <li>標準：30 秒，標準速度，10 分升關。</li>
+                            <li>挑戰：25 秒，物件較快，8 分升關。</li>
+                        </ul>
+                    </section>
+                    <section class="guide-section">
+                        <h3>年齡模式</h3>
+                        <ul>
+                            <li>幼兒：固定 60 秒，任務 3 個，關閉連擊。</li>
+                            <li>大童：使用難度時間，任務 5 個，開啟連擊。</li>
+                            <li>幼兒 HUD 會保留星星與任務，隱藏時間、連擊、關卡、飄走。</li>
+                        </ul>
+                    </section>
+                </div>
+                <p class="guide-note">冒險模式沒有倒數，難度與年齡仍會影響速度和每關目標數。</p>
             </div>
         </div>
     </div>
@@ -1564,6 +1701,7 @@
         let noiseBuffer = null;
 
         const container = document.getElementById('game-container');
+        const menuMusic = document.getElementById('menu-music');
         const bgMusic = document.getElementById('bg-music');
         const menuScreen = document.getElementById('menu-screen');
         const hud = document.getElementById('hud');
@@ -1583,6 +1721,9 @@
         const adventureStartBtn = document.getElementById('adventure-start-btn');
         const musicBtn = document.getElementById('music-btn');
         const musicMenuBtn = document.getElementById('music-menu-btn');
+        const guideBtn = document.getElementById('guide-btn');
+        const guideModal = document.getElementById('guide-modal');
+        const guideCloseBtn = document.getElementById('guide-close-btn');
         const muteBtn = document.getElementById('mute-btn');
         const backBtn = document.getElementById('back-btn');
         const resumeBtn = document.getElementById('resume-btn');
@@ -1704,21 +1845,59 @@
             node.connect(masterGain || audioCtx.destination);
         }
 
-        function updateMasterVolume() {
+        function updateMusicVolumes() {
+            menuMusic.volume = state.muted ? 0 : 0.28;
             bgMusic.volume = state.muted ? 0 : 0.36;
+        }
+
+        function updateMasterVolume() {
+            updateMusicVolumes();
             if (!masterGain || !audioCtx) return;
             const target = state.muted ? 0 : 0.24;
             masterGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.02);
         }
 
+        function isMenuVisible() {
+            return menuScreen.style.display !== 'none' && !state.running;
+        }
+
+        function startMenuMusic() {
+            if (!state.musicEnabled || !isMenuVisible()) return;
+            updateMusicVolumes();
+            bgMusic.pause();
+            menuMusic.play().catch(() => {});
+        }
+
+        function stopMenuMusic(reset = false) {
+            menuMusic.pause();
+            if (reset) menuMusic.currentTime = 0;
+        }
+
         function startBackgroundMusic() {
             if (!state.musicEnabled || !state.running || state.paused) return;
-            bgMusic.volume = state.muted ? 0 : 0.36;
+            stopMenuMusic();
+            updateMusicVolumes();
             bgMusic.play().catch(() => {});
         }
 
         function stopBackgroundMusic() {
             bgMusic.pause();
+        }
+
+        function syncMusicPlayback() {
+            if (!state.musicEnabled) {
+                stopMenuMusic();
+                stopBackgroundMusic();
+                return;
+            }
+            if (state.running && !state.paused) {
+                startBackgroundMusic();
+            } else if (isMenuVisible()) {
+                startMenuMusic();
+            } else {
+                stopMenuMusic();
+                stopBackgroundMusic();
+            }
         }
 
         function updateMusicButtons() {
@@ -2096,6 +2275,7 @@
         }
 
         function startGame(mode) {
+            stopMenuMusic(true);
             initAudio();
             stopTimers();
             clearItems();
@@ -2113,6 +2293,7 @@
         }
 
         function startAdventure() {
+            stopMenuMusic(true);
             initAudio();
             stopTimers();
             clearItems();
@@ -2230,6 +2411,7 @@
             summaryScreen.style.display = 'none';
             menuScreen.style.display = 'flex';
             renderMenuMeta();
+            startMenuMusic();
         }
 
         function updateSceneTheme(mode) {
@@ -2278,11 +2460,19 @@
         function toggleMusic() {
             state.musicEnabled = !state.musicEnabled;
             updateMusicButtons();
-            if (state.musicEnabled && state.running && !state.paused) {
-                startBackgroundMusic();
-            } else {
-                stopBackgroundMusic();
-            }
+            syncMusicPlayback();
+        }
+
+        function openGuide() {
+            guideModal.style.display = 'flex';
+            guideModal.setAttribute('aria-hidden', 'false');
+            guideBtn.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeGuide() {
+            guideModal.style.display = 'none';
+            guideModal.setAttribute('aria-hidden', 'true');
+            guideBtn.setAttribute('aria-expanded', 'false');
         }
 
         function setDifficulty(difficulty) {
@@ -2585,6 +2775,12 @@
                 missed: state.missed,
                 muted: state.muted,
                 musicEnabled: state.musicEnabled,
+                guideOpen: guideModal.style.display === 'flex',
+                music: {
+                    tracks: [...document.querySelectorAll('audio')].map(audio => audio.getAttribute('src')),
+                    menuPaused: menuMusic.paused,
+                    gamePaused: bgMusic.paused
+                },
                 profile: {
                     coins: profile.coins,
                     bestScore: profile.bestScore,
@@ -2621,13 +2817,23 @@
         summaryMenuBtn.addEventListener('pointerdown', goBack);
         musicBtn.addEventListener('pointerdown', toggleMusic);
         musicMenuBtn.addEventListener('pointerdown', toggleMusic);
+        guideBtn.addEventListener('pointerdown', openGuide);
+        guideCloseBtn.addEventListener('pointerdown', closeGuide);
+        guideModal.addEventListener('pointerdown', (event) => {
+            if (event.target === guideModal) closeGuide();
+        });
         muteBtn.addEventListener('pointerdown', toggleMute);
         updateMusicButtons();
         setDifficulty(state.difficulty);
         setAgeMode(state.ageMode);
         renderMenuMeta();
+        startMenuMusic();
+
+        document.addEventListener('pointerdown', syncMusicPlayback, { capture: true, once: true });
+        document.addEventListener('keydown', syncMusicPlayback, { once: true });
 
         document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && guideModal.style.display === 'flex') closeGuide();
             if (event.key.toLowerCase() === 'm') toggleMute();
             if (event.key.toLowerCase() === 'b') toggleMusic();
             if (event.key.toLowerCase() === 'p') setPaused(!state.paused);
