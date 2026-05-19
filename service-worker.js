@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapunzel-magic-world-v29';
+const CACHE_NAME = 'rapunzel-magic-world-v30';
 
 const APP_ASSETS = [
   './',

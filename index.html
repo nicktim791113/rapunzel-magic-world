@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png">
-    <title>樂佩的魔法世界 V2.9</title>
+    <title>樂佩的魔法世界 V3.0</title>
     <style>
         :root {
             --pink: #E91E63;
@@ -348,9 +348,9 @@
 
         .options-container {
             display: grid;
-            grid-template-columns: repeat(4, minmax(112px, 1fr));
+            grid-template-columns: repeat(5, minmax(104px, 1fr));
             gap: 12px;
-            width: min(92vw, 760px);
+            width: min(92vw, 860px);
         }
 
         .play-actions {
@@ -723,6 +723,13 @@
                 linear-gradient(180deg, #9DE6FF 0%, #FFE7A8 73%, #95D875 73%, #49A752 100%);
         }
 
+        .theme-alphabet {
+            background:
+                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.72) 0 24px, transparent 25px),
+                radial-gradient(circle at 78% 24%, rgba(255, 248, 181, 0.7) 0 32px, transparent 33px),
+                linear-gradient(180deg, #A8E6FF 0%, #FFF1BA 68%, #A9DC72 68%, #52AA5E 100%);
+        }
+
         .scene-prop {
             position: absolute;
             display: none;
@@ -733,8 +740,14 @@
         .theme-fruit .fruit-tree,
         .theme-animal .zoo-prop,
         .theme-vehicle .road-prop,
-        .theme-vehicle .scene-sign {
+        .theme-vehicle .scene-sign,
+        .theme-alphabet .scene-sign {
             display: block;
+        }
+
+        .theme-alphabet .scene-sign::after {
+            content: "ABC";
+            color: var(--purple);
         }
 
         .fruit-tree {
@@ -935,6 +948,54 @@
             filter: drop-shadow(0px 4px 2px rgba(0,0,0,0.13));
         }
 
+        .letter-style {
+            flex-direction: column;
+            gap: 1px;
+            border-radius: 22px;
+            border: 3px solid rgba(123, 44, 191, 0.3);
+            background:
+                radial-gradient(circle at 22% 20%, rgba(255,255,255,0.94) 0 16%, transparent 17%),
+                linear-gradient(145deg, #FFFFFF 0%, #FFF4B8 58%, #FFD6E9 100%);
+            box-shadow: 0 12px 18px rgba(65, 43, 85, 0.16), inset 0 -6px 0 rgba(123, 44, 191, 0.08);
+            color: var(--purple);
+            text-align: center;
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .letter-symbol {
+            display: block;
+            line-height: 0.92;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.78);
+        }
+
+        .letter-word {
+            display: block;
+            max-width: calc(100% - 8px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--pink);
+            font-size: 0.31em;
+            line-height: 1.05;
+            white-space: nowrap;
+            text-transform: lowercase;
+        }
+
+        .mission-target-letter {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 8px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 10px;
+            background: #FFF4B8;
+            color: var(--purple);
+            box-shadow: inset 0 -3px 0 rgba(123, 44, 191, 0.12);
+            font-weight: 900;
+            animation: missionPulse 1.45s ease-in-out infinite;
+        }
+
         .pop-effect {
             position: absolute;
             pointer-events: none;
@@ -983,6 +1044,15 @@
         @keyframes floatAway {
             0% { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        .miss-alphabet {
+            animation: letterFade 0.5s forwards;
+        }
+
+        @keyframes letterFade {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(16px) scale(0.82); opacity: 0; }
         }
 
         .miss-vehicle {
@@ -1244,6 +1314,12 @@
                 height: 28px;
             }
 
+            .mission-target-letter {
+                min-width: 28px;
+                height: 28px;
+                padding: 0 7px;
+            }
+
             .mission-count {
                 min-width: 24px;
             }
@@ -1375,6 +1451,10 @@
                 <button class="option-btn" data-mode="vehicle">
                     <span class="option-icon">🚂</span>
                     <span class="option-text">車車</span>
+                </button>
+                <button class="option-btn" data-mode="alphabet">
+                    <span class="option-icon">ABC</span>
+                    <span class="option-text">英文字母</span>
                 </button>
             </div>
             <div class="settings-panel" aria-label="遊戲設定">
@@ -1508,6 +1588,7 @@
                             <li>幼兒：固定 60 秒，任務 3 個，關閉連擊。</li>
                             <li>大童：使用難度時間，任務 5 個，開啟連擊。</li>
                             <li>幼兒 HUD 會保留星星與任務，隱藏時間、連擊、關卡、飄走。</li>
+                            <li>英文字母：A-Z 掉落，點擊後播放對應英文單字發音。</li>
                         </ul>
                     </section>
                 </div>
@@ -1591,6 +1672,35 @@
             '#FF9FF3': '紫氣球'
         };
 
+        const alphabetItems = [
+            { letter: 'A', word: 'apple' },
+            { letter: 'B', word: 'banana' },
+            { letter: 'C', word: 'cat' },
+            { letter: 'D', word: 'dog' },
+            { letter: 'E', word: 'elephant' },
+            { letter: 'F', word: 'fish' },
+            { letter: 'G', word: 'grapes' },
+            { letter: 'H', word: 'house' },
+            { letter: 'I', word: 'ice cream' },
+            { letter: 'J', word: 'juice' },
+            { letter: 'K', word: 'kite' },
+            { letter: 'L', word: 'lion' },
+            { letter: 'M', word: 'moon' },
+            { letter: 'N', word: 'nest' },
+            { letter: 'O', word: 'orange' },
+            { letter: 'P', word: 'princess' },
+            { letter: 'Q', word: 'queen' },
+            { letter: 'R', word: 'rocket' },
+            { letter: 'S', word: 'star' },
+            { letter: 'T', word: 'train' },
+            { letter: 'U', word: 'umbrella' },
+            { letter: 'V', word: 'violin' },
+            { letter: 'W', word: 'whale' },
+            { letter: 'X', word: 'xylophone' },
+            { letter: 'Y', word: 'yellow' },
+            { letter: 'Z', word: 'zebra' }
+        ];
+
         const spriteAssets = {
             '#FF6B6B': { file: 'assets/images/items/balloon-red.png', group: 'balloon', label: '紅氣球' },
             '#54A0FF': { file: 'assets/images/items/balloon-blue.png', group: 'balloon', label: '藍氣球' },
@@ -1653,6 +1763,14 @@
                 ],
                 popText: 'Vroom!',
                 encouragements: ['出發去冒險！', '車車跑得真快！', '交通魔法啟動！']
+            },
+            alphabet: {
+                label: '英文字母',
+                type: 'letter_word',
+                missClass: 'miss-alphabet',
+                items: alphabetItems,
+                popText: 'ABC!',
+                encouragements: ['字母魔法亮起來！', '英文單字聽到了！', 'A 到 Z 都在發光！']
             }
         };
 
@@ -1661,12 +1779,12 @@
             { mode: 'fruit', title: '果園尋寶', goal: 3, time: 50 },
             { mode: 'animal', title: '動物朋友', goal: 3, time: 48 },
             { mode: 'vehicle', title: '小小車站', goal: 3, time: 48 },
-            { mode: 'fruit', title: '甜蜜分類', goal: 4, time: 46 },
+            { mode: 'alphabet', title: 'ABC 花園', goal: 4, time: 46 },
             { mode: 'animal', title: '森林呼喚', goal: 4, time: 44 },
             { mode: 'balloon', title: '彩球旋風', goal: 5, time: 42 },
             { mode: 'vehicle', title: '道路衝刺', goal: 5, time: 40 },
             { mode: 'fruit', title: '魔法果籃', goal: 6, time: 38 },
-            { mode: 'animal', title: '天燈大挑戰', goal: 6, time: 36 }
+            { mode: 'alphabet', title: '字母天燈', goal: 6, time: 36 }
         ];
 
         const state = {
@@ -1934,6 +2052,17 @@
             window.speechSynthesis.speak(utterance);
         }
 
+        function speakEnglishWord(word) {
+            if (!word || state.muted || !('speechSynthesis' in window)) return;
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = state.ageMode === 'toddler' ? 0.78 : 0.88;
+            utterance.pitch = 1.03;
+            utterance.volume = 0.95;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        }
+
         function getNoiseBuffer() {
             if (!noiseBuffer) {
                 const bufferSize = audioCtx.sampleRate * 2;
@@ -2161,6 +2290,11 @@
                 icon.className = 'mission-target-icon';
                 icon.style.setProperty('--sprite-image', `url("${sprite.file}")`);
                 missionVal.appendChild(icon);
+            } else if (state.mission.displayText) {
+                const letter = document.createElement('span');
+                letter.className = 'mission-target-letter';
+                letter.innerText = state.mission.displayText;
+                missionVal.appendChild(letter);
             }
 
             const count = document.createElement('span');
@@ -2194,6 +2328,7 @@
 
         function itemMissionKey(choice, modeData) {
             if (modeData.type === 'color') return choice;
+            if (modeData.type === 'letter_word') return choice.letter;
             if (typeof choice === 'string') return choice;
             return choice.emoji;
         }
@@ -2202,8 +2337,14 @@
             const sprite = spriteCellForKey(itemMissionKey(choice, modeData));
             if (sprite) return sprite.label;
             if (modeData.type === 'color') return colorLabels[choice] || '彩色氣球';
+            if (modeData.type === 'letter_word') return `${choice.letter} ${choice.word}`;
             if (typeof choice === 'string') return choice;
             return choice.emoji;
+        }
+
+        function itemMissionDisplay(choice, modeData) {
+            if (modeData.type === 'letter_word') return choice.letter;
+            return '';
         }
 
         function spriteCellForKey(key) {
@@ -2223,12 +2364,27 @@
             return true;
         }
 
+        function applyLetterItem(item, choice, size) {
+            const letter = document.createElement('span');
+            const word = document.createElement('span');
+            letter.className = 'letter-symbol';
+            word.className = 'letter-word';
+            letter.innerText = choice.letter;
+            word.innerText = choice.word;
+            item.classList.add('letter-style');
+            item.style.fontSize = `${size * 0.52}px`;
+            item.dataset.label = `${choice.letter} ${choice.word}`;
+            item.dataset.word = choice.word;
+            item.append(letter, word);
+        }
+
         function chooseMission(mode, goal = ageData[state.ageMode].missionGoal) {
             const modeData = gameData[mode];
             const choice = modeData.items[Math.floor(Math.random() * modeData.items.length)];
             return {
                 key: itemMissionKey(choice, modeData),
                 label: itemLabel(choice, modeData),
+                displayText: itemMissionDisplay(choice, modeData),
                 count: 0,
                 goal,
                 complete: false
@@ -2426,7 +2582,7 @@
         }
 
         function updateSceneTheme(mode) {
-            container.classList.remove('theme-balloon', 'theme-fruit', 'theme-animal', 'theme-vehicle');
+            container.classList.remove('theme-balloon', 'theme-fruit', 'theme-animal', 'theme-vehicle', 'theme-alphabet');
             if (mode) container.classList.add(`theme-${mode}`);
         }
 
@@ -2604,8 +2760,8 @@
             state.activeItems.add(item);
 
             const size = 68 + Math.random() * 38;
-            const itemWidth = state.mode === 'vehicle' ? size * 1.34 : size;
-            const itemHeight = state.mode === 'vehicle' ? size * 0.96 : size;
+            const itemWidth = state.mode === 'vehicle' ? size * 1.34 : state.mode === 'alphabet' ? size * 1.14 : size;
+            const itemHeight = state.mode === 'vehicle' ? size * 0.96 : state.mode === 'alphabet' ? size * 1.04 : size;
             item.style.width = `${itemWidth}px`;
             item.style.height = `${itemHeight}px`;
 
@@ -2620,6 +2776,7 @@
             let missionKey = '';
             let fallbackText = '';
             let fallbackColor = '';
+            let letterChoice = null;
 
             if (modeData.type === 'color') {
                 const color = pickSpawnChoice(modeData);
@@ -2629,6 +2786,10 @@
                 const content = pickSpawnChoice(modeData);
                 missionKey = content;
                 fallbackText = content;
+            } else if (modeData.type === 'letter_word') {
+                letterChoice = pickSpawnChoice(modeData);
+                missionKey = letterChoice.letter;
+                fallbackText = letterChoice.letter;
             } else {
                 const choice = pickSpawnChoice(modeData);
                 soundType = choice.sound;
@@ -2636,7 +2797,10 @@
                 fallbackText = choice.emoji;
             }
 
-            if (!applySpriteAsset(item, missionKey)) {
+            if (letterChoice) {
+                applyLetterItem(item, letterChoice, size);
+                item._spokenWord = letterChoice.word;
+            } else if (!applySpriteAsset(item, missionKey)) {
                 if (fallbackColor) {
                     item.style.backgroundColor = fallbackColor;
                     item.classList.add('balloon-style');
@@ -2649,9 +2813,10 @@
             item._missionKey = missionKey;
 
             const endY = window.innerHeight - itemHeight - 22;
+            const endRotation = state.mode === 'vehicle' ? 0 : state.mode === 'alphabet' ? (Math.random() * 20 - 10) : (Math.random() * 60 - 30);
             const animation = item.animate([
                 { transform: 'translateY(0px) rotate(0deg)' },
-                { transform: `translateY(${window.innerHeight}px) rotate(${state.mode === 'vehicle' ? 0 : (Math.random() * 60 - 30)}deg)` }
+                { transform: `translateY(${window.innerHeight}px) rotate(${endRotation}deg)` }
             ], {
                 duration: fallDurationForLevel(state.level),
                 easing: 'linear'
@@ -2689,12 +2854,15 @@
                 playAnimalSound(soundType);
             } else if (state.mode === 'vehicle') {
                 playVehicleSound(soundType);
+            } else if (state.mode === 'alphabet') {
+                playPopSound();
+                speakEnglishWord(item._spokenWord);
             } else {
                 playPopSound();
             }
 
             const rect = item.getBoundingClientRect();
-            showPopText(rect.left, rect.top, size, modeData.popText);
+            showPopText(rect.left, rect.top, size, item._spokenWord || modeData.popText);
 
             if (ageData[state.ageMode].comboEnabled) {
                 updateCombo();
@@ -2714,7 +2882,7 @@
             if (state.score % 7 === 0 || state.combo === 1) {
                 showToast(encourageToast, randomEncouragement());
             }
-            if (state.score % 4 === 0 || state.ageMode === 'toddler') {
+            if (state.mode !== 'alphabet' && (state.score % 4 === 0 || state.ageMode === 'toddler')) {
                 speakEncouragement();
             }
 
