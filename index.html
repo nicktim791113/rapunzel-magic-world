@@ -501,6 +501,111 @@
             grid-template-columns: repeat(2, 1fr);
         }
 
+        .audio-panel {
+            width: min(92vw, 860px);
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .audio-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.78);
+            box-shadow: 0 4px 0 rgba(210, 58, 120, 0.18);
+        }
+
+        .audio-row .audio-icon {
+            font-size: 1.2rem;
+        }
+
+        .audio-row .audio-label {
+            color: #5B4B63;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+
+        .audio-row input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: linear-gradient(to right, var(--rose), var(--purple));
+            outline: none;
+            cursor: pointer;
+        }
+
+        .audio-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--purple);
+            box-shadow: 0 2px 6px rgba(123, 44, 191, 0.4);
+            cursor: pointer;
+        }
+
+        .audio-row input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--purple);
+            box-shadow: 0 2px 6px rgba(123, 44, 191, 0.4);
+            cursor: pointer;
+        }
+
+        .audio-row .audio-value {
+            min-width: 36px;
+            text-align: right;
+            color: var(--purple);
+            font-weight: 900;
+            font-size: 0.92rem;
+        }
+
+        .audio-test-btn {
+            min-width: 56px;
+            min-height: 34px;
+            border: 2px solid rgba(233, 30, 99, 0.25);
+            border-radius: 12px;
+            background: white;
+            color: var(--pink);
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 0.85rem;
+            box-shadow: 0 3px 0 rgba(210, 58, 120, 0.65);
+        }
+
+        .audio-test-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 rgba(210, 58, 120, 0.65);
+        }
+
+        @media (max-width: 720px) {
+            .audio-panel {
+                width: 100%;
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .audio-row {
+                padding: 8px 10px;
+                gap: 8px;
+            }
+
+            .audio-row .audio-label {
+                font-size: 0.82rem;
+            }
+        }
+
         .menu-panels {
             width: min(92vw, 720px);
             display: grid;
@@ -1482,6 +1587,21 @@
                     <button class="toggle-btn info-btn" id="guide-btn" aria-label="開啟模式說明" aria-haspopup="dialog" aria-expanded="false">說明</button>
                 </div>
             </div>
+            <div class="audio-panel" aria-label="音量設定">
+                <div class="audio-row">
+                    <span class="audio-icon" aria-hidden="true">🎵</span>
+                    <span class="audio-label">背景音樂</span>
+                    <input type="range" id="music-volume" min="0" max="100" step="1" value="45" aria-label="背景音樂音量">
+                    <span class="audio-value" id="music-volume-value">45</span>
+                </div>
+                <div class="audio-row">
+                    <span class="audio-icon" aria-hidden="true">🔤</span>
+                    <span class="audio-label">音效 / 英文發音</span>
+                    <input type="range" id="sfx-volume" min="0" max="100" step="1" value="85" aria-label="音效與英文發音音量">
+                    <span class="audio-value" id="sfx-volume-value">85</span>
+                    <button class="audio-test-btn" id="sfx-test-btn" type="button" aria-label="試聽英文字母 A Apple">試聽</button>
+                </div>
+            </div>
             <div class="menu-panels">
                 <div class="mini-panel">
                     <div class="mini-panel-title">獎章</div>
@@ -1801,6 +1921,8 @@
             paused: false,
             muted: false,
             musicEnabled: true,
+            sfxVolume: 0.85,
+            musicVolume: 0.45,
             difficulty: 'normal',
             ageMode: 'toddler',
             lastHitAt: 0,
@@ -1829,6 +1951,22 @@
         let masterGain = null;
         let noiseBuffer = null;
         let englishVoice = null;
+        let speechPrimed = false;
+
+        function primeSpeechSynthesis() {
+            if (speechPrimed || !('speechSynthesis' in window)) return;
+            speechPrimed = true;
+            try {
+                if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+                const warmup = new SpeechSynthesisUtterance(' ');
+                warmup.lang = 'en-US';
+                warmup.volume = 0;
+                warmup.rate = 1;
+                window.speechSynthesis.speak(warmup);
+            } catch (e) {
+                // Silent: priming is best-effort
+            }
+        }
 
         function pickEnglishVoice() {
             if (!('speechSynthesis' in window)) return null;
@@ -1917,7 +2055,8 @@
                 bestScore: 0,
                 medals: {},
                 inventory: { slow: 0, magnet: 0, crown: 0 },
-                leaderboard: []
+                leaderboard: [],
+                audio: { sfxVolume: 0.85, musicVolume: 0.45, muted: false, musicEnabled: true }
             };
             try {
                 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -1926,7 +2065,8 @@
                     ...saved,
                     medals: { ...fallback.medals, ...(saved?.medals || {}) },
                     inventory: { ...fallback.inventory, ...(saved?.inventory || {}) },
-                    leaderboard: Array.isArray(saved?.leaderboard) ? saved.leaderboard : []
+                    leaderboard: Array.isArray(saved?.leaderboard) ? saved.leaderboard : [],
+                    audio: { ...fallback.audio, ...(saved?.audio || {}) }
                 };
             } catch {
                 return fallback;
@@ -1935,6 +2075,16 @@
 
         function saveProfile() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+        }
+
+        function saveAudioPrefs() {
+            profile.audio = {
+                sfxVolume: state.sfxVolume,
+                musicVolume: state.musicVolume,
+                muted: state.muted,
+                musicEnabled: state.musicEnabled
+            };
+            saveProfile();
         }
 
         function renderMenuMeta() {
@@ -1999,16 +2149,27 @@
             profile.leaderboard = profile.leaderboard.slice(0, 5);
         }
 
+        function effectiveSfxGain() {
+            if (state.muted) return 0;
+            return Math.max(0, Math.min(1, state.sfxVolume)) * 0.5;
+        }
+
+        function effectiveMusicGain() {
+            if (state.muted || !state.musicEnabled) return 0;
+            return Math.max(0, Math.min(1, state.musicVolume)) * 0.7;
+        }
+
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 masterGain = audioCtx.createGain();
-                masterGain.gain.value = state.muted ? 0 : 0.24;
+                masterGain.gain.value = effectiveSfxGain();
                 masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+            primeSpeechSynthesis();
         }
 
         function connectSound(node) {
@@ -2016,15 +2177,15 @@
         }
 
         function updateMusicVolumes() {
-            menuMusic.volume = state.muted ? 0 : 0.28;
-            bgMusic.volume = state.muted ? 0 : 0.36;
+            const vol = effectiveMusicGain();
+            menuMusic.volume = vol;
+            bgMusic.volume = vol;
         }
 
         function updateMasterVolume() {
             updateMusicVolumes();
             if (!masterGain || !audioCtx) return;
-            const target = state.muted ? 0 : 0.24;
-            masterGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.02);
+            masterGain.gain.setTargetAtTime(effectiveSfxGain(), audioCtx.currentTime, 0.02);
         }
 
         function isMenuVisible() {
@@ -2093,39 +2254,69 @@
             window.speechSynthesis.speak(utterance);
         }
 
+        function speechEffectiveVolume(extra = 1) {
+            if (state.muted) return 0;
+            const v = Math.max(0, Math.min(1, state.sfxVolume * 1.25 * extra));
+            return v;
+        }
+
         function buildEnglishUtterance(text, options = {}) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
             utterance.rate = options.rate ?? (state.ageMode === 'toddler' ? 0.7 : 0.82);
             utterance.pitch = options.pitch ?? 1.05;
-            utterance.volume = options.volume ?? 1;
+            utterance.volume = speechEffectiveVolume(options.volume ?? 1);
             if (!englishVoice) englishVoice = pickEnglishVoice();
             if (englishVoice) utterance.voice = englishVoice;
             return utterance;
         }
 
+        function speakSequence(utterances) {
+            if (!utterances.length || state.muted || !('speechSynthesis' in window)) return;
+            try {
+                const synth = window.speechSynthesis;
+                if (synth.paused) synth.resume();
+                const doSpeak = () => {
+                    if (synth.paused) synth.resume();
+                    for (const u of utterances) {
+                        try { synth.speak(u); } catch (e) { /* ignore */ }
+                    }
+                };
+                if (synth.speaking || synth.pending) {
+                    synth.cancel();
+                    // Chrome bug: speak() right after cancel() drops the utterance.
+                    // Defer past the cancel turn so the new ones actually play.
+                    setTimeout(doSpeak, 100);
+                } else {
+                    doSpeak();
+                }
+            } catch (e) {
+                // Silent
+            }
+        }
+
         function speakEnglishWord(word) {
             if (!word || state.muted || !('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(buildEnglishUtterance(word));
+            speakSequence([buildEnglishUtterance(word)]);
         }
 
         function speakLetterAndWord(letter, word) {
             if (state.muted || !('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
+            const utterances = [];
             if (letter) {
                 const letterText = letter.length === 1 ? `${letter}.` : letter;
-                window.speechSynthesis.speak(buildEnglishUtterance(letterText, {
+                utterances.push(buildEnglishUtterance(letterText, {
                     rate: state.ageMode === 'toddler' ? 0.65 : 0.78,
                     pitch: 1.12
                 }));
             }
             if (word) {
-                window.speechSynthesis.speak(buildEnglishUtterance(word, {
+                utterances.push(buildEnglishUtterance(word, {
                     rate: state.ageMode === 'toddler' ? 0.7 : 0.82,
                     pitch: 1.02
                 }));
             }
+            speakSequence(utterances);
         }
 
         function getNoiseBuffer() {
@@ -2178,10 +2369,10 @@
             osc1.connect(gain1);
             connectSound(gain1);
             gain1.gain.setValueAtTime(0.0001, t);
-            gain1.gain.exponentialRampToValueAtTime(0.5, t + 0.01);
-            gain1.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+            gain1.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
+            gain1.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
             osc1.start(t);
-            osc1.stop(t + 0.5);
+            osc1.stop(t + 0.35);
 
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
@@ -2190,10 +2381,10 @@
             osc2.connect(gain2);
             connectSound(gain2);
             gain2.gain.setValueAtTime(0.0001, t);
-            gain2.gain.exponentialRampToValueAtTime(0.18, t + 0.008);
-            gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+            gain2.gain.exponentialRampToValueAtTime(0.07, t + 0.008);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
             osc2.start(t);
-            osc2.stop(t + 0.35);
+            osc2.stop(t + 0.28);
         }
 
         function playAnimalSound(type) {
@@ -3121,11 +3312,93 @@
             if (event.target === guideModal) closeGuide();
         });
         muteBtn.addEventListener('pointerdown', toggleMute);
+
+        // Restore saved audio preferences before wiring up sliders
+        if (profile.audio) {
+            if (typeof profile.audio.sfxVolume === 'number') state.sfxVolume = profile.audio.sfxVolume;
+            if (typeof profile.audio.musicVolume === 'number') state.musicVolume = profile.audio.musicVolume;
+            if (typeof profile.audio.muted === 'boolean') state.muted = profile.audio.muted;
+            if (typeof profile.audio.musicEnabled === 'boolean') state.musicEnabled = profile.audio.musicEnabled;
+            muteBtn.innerText = state.muted ? '🔇' : '🔊';
+        }
+
+        const musicVolumeInput = document.getElementById('music-volume');
+        const musicVolumeValue = document.getElementById('music-volume-value');
+        const sfxVolumeInput = document.getElementById('sfx-volume');
+        const sfxVolumeValue = document.getElementById('sfx-volume-value');
+        const sfxTestBtn = document.getElementById('sfx-test-btn');
+
+        function syncVolumeUI() {
+            const m = Math.round(state.musicVolume * 100);
+            const s = Math.round(state.sfxVolume * 100);
+            musicVolumeInput.value = String(m);
+            musicVolumeValue.innerText = String(m);
+            sfxVolumeInput.value = String(s);
+            sfxVolumeValue.innerText = String(s);
+        }
+
+        syncVolumeUI();
+
+        musicVolumeInput.addEventListener('input', (event) => {
+            state.musicVolume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
+            musicVolumeValue.innerText = String(Math.round(state.musicVolume * 100));
+            updateMusicVolumes();
+        });
+        musicVolumeInput.addEventListener('change', saveAudioPrefs);
+
+        sfxVolumeInput.addEventListener('input', (event) => {
+            state.sfxVolume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
+            sfxVolumeValue.innerText = String(Math.round(state.sfxVolume * 100));
+            updateMasterVolume();
+        });
+        sfxVolumeInput.addEventListener('change', () => {
+            saveAudioPrefs();
+            // Play a short demo so user hears the new SFX level immediately
+            initAudio();
+            playLetterChime('A');
+            speakLetterAndWord('A', 'Apple');
+        });
+
+        sfxTestBtn.addEventListener('pointerdown', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            initAudio();
+            playLetterChime('A');
+            speakLetterAndWord('A', 'Apple');
+        });
+
+        // Wrap toggle functions so they also persist
+        const originalToggleMute = toggleMute;
+        toggleMute = function () {
+            originalToggleMute();
+            saveAudioPrefs();
+        };
+        muteBtn.removeEventListener('pointerdown', originalToggleMute);
+        muteBtn.addEventListener('pointerdown', toggleMute);
+
+        const originalToggleMusic = toggleMusic;
+        toggleMusic = function () {
+            originalToggleMusic();
+            saveAudioPrefs();
+        };
+        musicBtn.removeEventListener('pointerdown', originalToggleMusic);
+        musicMenuBtn.removeEventListener('pointerdown', originalToggleMusic);
+        musicBtn.addEventListener('pointerdown', toggleMusic);
+        musicMenuBtn.addEventListener('pointerdown', toggleMusic);
+
         updateMusicButtons();
         setDifficulty(state.difficulty);
         setAgeMode(state.ageMode);
         renderMenuMeta();
         startMenuMusic();
+        updateMusicVolumes();
+
+        // Prime audio + speech on the very first user gesture (required for iOS/Safari)
+        const firstGestureInit = () => {
+            initAudio();
+        };
+        document.addEventListener('pointerdown', firstGestureInit, { capture: true, once: true });
+        document.addEventListener('keydown', firstGestureInit, { once: true });
 
         document.addEventListener('pointerdown', syncMusicPlayback, { capture: true, once: true });
         document.addEventListener('keydown', syncMusicPlayback, { once: true });
