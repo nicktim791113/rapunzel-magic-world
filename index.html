@@ -3091,6 +3091,7 @@
                 soundType = choice.sound;
                 missionKey = choice.emoji;
                 fallbackText = choice.emoji;
+                item._spokenWord = choice.sound || '';
             }
 
             if (letterChoice) {
@@ -3149,6 +3150,7 @@
 
             if (state.mode === 'animal') {
                 playAnimalSound(soundType);
+                if (item._spokenWord) speakEnglishWord(item._spokenWord);
             } else if (state.mode === 'vehicle') {
                 playVehicleSound(soundType);
             } else if (state.mode === 'alphabet') {
