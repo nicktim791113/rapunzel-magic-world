@@ -1827,6 +1827,13 @@
             { letter: 'Z', word: 'zebra' }
         ];
 
+        const fruitEnglishNames = {
+            '🍎': 'apple',
+            '🍌': 'banana',
+            '🍇': 'grapes',
+            '🍓': 'strawberry'
+        };
+
         const spriteAssets = {
             '#FF6B6B': { file: 'assets/images/items/balloon-red.png', group: 'balloon', label: '紅氣球' },
             '#54A0FF': { file: 'assets/images/items/balloon-blue.png', group: 'balloon', label: '藍氣球' },
@@ -2385,6 +2392,43 @@
             connectSound(noiseGain);
             noise.start(t);
             noise.stop(t + 0.16);
+        }
+
+        function playSliceSound() {
+            if (!audioCtx || state.muted) return;
+            const t = audioCtx.currentTime;
+
+            // Whoosh: filtered noise sweep from ~3kHz down to ~500Hz over 200ms
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = getNoiseBuffer();
+            const bandpass = audioCtx.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.Q.value = 6;
+            bandpass.frequency.setValueAtTime(3000, t);
+            bandpass.frequency.exponentialRampToValueAtTime(500, t + 0.2);
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.0001, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.55, t + 0.015);
+            noiseGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+            noiseSource.connect(bandpass);
+            bandpass.connect(noiseGain);
+            connectSound(noiseGain);
+            noiseSource.start(t);
+            noiseSource.stop(t + 0.25);
+
+            // High-pitched zing (sharp click): sine 2000Hz → 800Hz, ~80ms
+            const zing = audioCtx.createOscillator();
+            const zingGain = audioCtx.createGain();
+            zing.type = 'sine';
+            zing.frequency.setValueAtTime(2000, t);
+            zing.frequency.exponentialRampToValueAtTime(800, t + 0.08);
+            zingGain.gain.setValueAtTime(0.0001, t);
+            zingGain.gain.exponentialRampToValueAtTime(0.32, t + 0.005);
+            zingGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+            zing.connect(zingGain);
+            connectSound(zingGain);
+            zing.start(t);
+            zing.stop(t + 0.1);
         }
 
         function playLetterChime(letter) {
@@ -3122,6 +3166,9 @@
                 const content = pickSpawnChoice(modeData);
                 missionKey = content;
                 fallbackText = content;
+                if (state.mode === 'fruit') {
+                    item._spokenWord = fruitEnglishNames[content] || '';
+                }
             } else if (modeData.type === 'letter_word') {
                 letterChoice = pickSpawnChoice(modeData);
                 missionKey = letterChoice.letter;
@@ -3201,6 +3248,9 @@
                 speakLetterAndWord(item._spokenLetter, item._spokenWord);
             } else if (state.mode === 'balloon') {
                 playBalloonPop();
+                if (item._spokenWord) speakEnglishWord(item._spokenWord);
+            } else if (state.mode === 'fruit') {
+                playSliceSound();
                 if (item._spokenWord) speakEnglishWord(item._spokenWord);
             } else {
                 playPopSound();
@@ -3462,6 +3512,42 @@
         document.body.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, { passive: false });
+
+        // Fruit Ninja-style swipe detection for fruit mode.
+        // Coexists with the per-item pointerdown listener so a plain tap still works.
+        let swipeState = null;
+        const SWIPE_MIN_DISTANCE = 25;
+
+        container.addEventListener('pointerdown', (event) => {
+            if (state.mode !== 'fruit' || !state.running || state.paused) return;
+            swipeState = {
+                startX: event.clientX,
+                startY: event.clientY,
+                sliced: new Set()
+            };
+        });
+
+        container.addEventListener('pointermove', (event) => {
+            if (!swipeState) return;
+            const dx = event.clientX - swipeState.startX;
+            const dy = event.clientY - swipeState.startY;
+            if (Math.hypot(dx, dy) < SWIPE_MIN_DISTANCE) return;
+            const fruits = container.querySelectorAll('.item');
+            fruits.forEach((fruit) => {
+                if (swipeState.sliced.has(fruit) || fruit._missed) return;
+                const r = fruit.getBoundingClientRect();
+                if (event.clientX >= r.left && event.clientX <= r.right &&
+                    event.clientY >= r.top && event.clientY <= r.bottom) {
+                    swipeState.sliced.add(fruit);
+                    handleInteract(event, fruit, 'default', Math.max(r.width, r.height), gameData.fruit);
+                }
+            });
+        });
+
+        const endSwipe = () => { swipeState = null; };
+        container.addEventListener('pointerup', endSwipe);
+        container.addEventListener('pointercancel', endSwipe);
+        container.addEventListener('pointerleave', endSwipe);
 
         registerServiceWorker();
     </script>
