@@ -1875,11 +1875,11 @@
                 type: 'sound_object',
                 missClass: 'miss-vehicle',
                 items: [
-                    { emoji: '🚗', sound: 'car' },
-                    { emoji: '🚌', sound: 'car' },
-                    { emoji: '🚂', sound: 'train' },
-                    { emoji: '🚀', sound: 'plane' },
-                    { emoji: '🚲', sound: 'bike' }
+                    { emoji: '🚗', sound: 'car',   english: 'car',   direction: 'left-right' },
+                    { emoji: '🚌', sound: 'car',   english: 'bus',   direction: 'left-right' },
+                    { emoji: '🚂', sound: 'train', english: 'train', direction: 'left-right' },
+                    { emoji: '🚀', sound: 'plane', english: 'rocket', direction: 'bottom-up' },
+                    { emoji: '🚲', sound: 'bike',  english: 'bike',  direction: 'right-left' }
                 ],
                 popText: 'Vroom!',
                 encouragements: ['出發去冒險！', '車車跑得真快！', '交通魔法啟動！']
@@ -3061,18 +3061,13 @@
             item.style.width = `${itemWidth}px`;
             item.style.height = `${itemHeight}px`;
 
-            const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
-            const startX = 12 + Math.random() * maxX;
-            const startY = state.mode === 'vehicle' ? Math.max(112, window.innerHeight * 0.12) : -itemHeight;
-            item.style.left = `${startX}px`;
-            item.style.top = `${startY}px`;
-
             const modeData = gameData[state.mode];
             let soundType = 'default';
             let missionKey = '';
             let fallbackText = '';
             let fallbackColor = '';
             let letterChoice = null;
+            let vehicleChoice = null;
 
             if (modeData.type === 'color') {
                 const color = pickSpawnChoice(modeData);
@@ -3091,7 +3086,36 @@
                 soundType = choice.sound;
                 missionKey = choice.emoji;
                 fallbackText = choice.emoji;
+                if (state.mode === 'vehicle') {
+                    vehicleChoice = choice;
+                }
             }
+
+            let startX, startY, endTransform;
+            if (vehicleChoice) {
+                const dir = vehicleChoice.direction;
+                if (dir === 'left-right') {
+                    startX = -itemWidth;
+                    startY = window.innerHeight * (0.45 + Math.random() * 0.25);
+                    endTransform = `translateX(${window.innerWidth + itemWidth * 2}px) translateY(0px) rotate(0deg)`;
+                } else if (dir === 'right-left') {
+                    startX = window.innerWidth + itemWidth;
+                    startY = window.innerHeight * (0.45 + Math.random() * 0.25);
+                    endTransform = `translateX(-${window.innerWidth + itemWidth * 2}px) translateY(0px) rotate(0deg)`;
+                } else {
+                    // bottom-up (rocket)
+                    const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
+                    startX = 12 + Math.random() * maxX;
+                    startY = window.innerHeight + itemHeight;
+                    endTransform = `translateX(0px) translateY(-${window.innerHeight + itemHeight * 2}px) rotate(${(Math.random() * 10 - 5).toFixed(1)}deg)`;
+                }
+            } else {
+                const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
+                startX = 12 + Math.random() * maxX;
+                startY = -itemHeight;
+            }
+            item.style.left = `${startX}px`;
+            item.style.top = `${startY}px`;
 
             if (letterChoice) {
                 applyLetterItem(item, letterChoice, size);
@@ -3107,17 +3131,28 @@
                     item.style.fontSize = `${size * 0.8}px`;
                 }
             }
+            if (vehicleChoice) {
+                item._spokenWord = vehicleChoice.english;
+            }
             item._missionKey = missionKey;
 
             const endY = window.innerHeight - itemHeight - 22;
-            const endRotation = state.mode === 'vehicle' ? 0 : state.mode === 'alphabet' ? (Math.random() * 20 - 10) : (Math.random() * 60 - 30);
-            const animation = item.animate([
-                { transform: 'translateY(0px) rotate(0deg)' },
-                { transform: `translateY(${window.innerHeight}px) rotate(${endRotation}deg)` }
-            ], {
-                duration: fallDurationForLevel(state.level),
-                easing: 'linear'
-            });
+            const endRotation = state.mode === 'alphabet' ? (Math.random() * 20 - 10) : (Math.random() * 60 - 30);
+            const animation = vehicleChoice
+                ? item.animate([
+                    { transform: 'translateX(0px) translateY(0px) rotate(0deg)' },
+                    { transform: endTransform }
+                ], {
+                    duration: fallDurationForLevel(state.level),
+                    easing: 'linear'
+                })
+                : item.animate([
+                    { transform: 'translateY(0px) rotate(0deg)' },
+                    { transform: `translateY(${window.innerHeight}px) rotate(${endRotation}deg)` }
+                ], {
+                    duration: fallDurationForLevel(state.level),
+                    easing: 'linear'
+                });
 
             item._fallAnimation = animation;
             item._missed = false;
@@ -3140,6 +3175,10 @@
 
             container.appendChild(item);
             updateStats();
+
+            if (state.mode === 'vehicle') {
+                playVehicleSound(soundType);
+            }
         }
 
         function handleInteract(event, item, soundType, size, modeData) {
@@ -3151,6 +3190,7 @@
                 playAnimalSound(soundType);
             } else if (state.mode === 'vehicle') {
                 playVehicleSound(soundType);
+                if (item._spokenWord) speakEnglishWord(item._spokenWord);
             } else if (state.mode === 'alphabet') {
                 playLetterChime(item._spokenLetter);
                 speakLetterAndWord(item._spokenLetter, item._spokenWord);
