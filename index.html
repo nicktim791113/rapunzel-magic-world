@@ -1792,6 +1792,12 @@
             '#FF9FF3': '紫氣球'
         };
 
+        const colorEnglishNames = {
+            '#FF6B6B': 'red',
+            '#54A0FF': 'blue',
+            '#FF9FF3': 'pink'
+        };
+
         const alphabetItems = [
             { letter: 'A', word: 'apple' },
             { letter: 'B', word: 'banana' },
@@ -2345,6 +2351,40 @@
             gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
             osc.start(t);
             osc.stop(t + 0.1);
+        }
+
+        function playBalloonPop() {
+            if (!audioCtx || state.muted) return;
+            const t = audioCtx.currentTime;
+
+            // Sharp pitched click — the rubber snap at the instant of rupture.
+            const click = audioCtx.createOscillator();
+            const clickGain = audioCtx.createGain();
+            click.type = 'triangle';
+            click.frequency.setValueAtTime(800, t);
+            click.frequency.exponentialRampToValueAtTime(100, t + 0.06);
+            clickGain.gain.setValueAtTime(0.5, t);
+            clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+            click.connect(clickGain);
+            connectSound(clickGain);
+            click.start(t);
+            click.stop(t + 0.08);
+
+            // Short noise burst — the air release, band-passed around 1.5 kHz.
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = getNoiseBuffer();
+            const bandpass = audioCtx.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.setValueAtTime(1500, t);
+            bandpass.Q.value = 0.9;
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.45, t);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+            noise.connect(bandpass);
+            bandpass.connect(noiseGain);
+            connectSound(noiseGain);
+            noise.start(t);
+            noise.stop(t + 0.16);
         }
 
         function playLetterChime(letter) {
@@ -3107,6 +3147,9 @@
                     item.style.fontSize = `${size * 0.8}px`;
                 }
             }
+            if (fallbackColor) {
+                item._spokenWord = colorEnglishNames[fallbackColor] || '';
+            }
             item._missionKey = missionKey;
 
             const endY = window.innerHeight - itemHeight - 22;
@@ -3154,6 +3197,9 @@
             } else if (state.mode === 'alphabet') {
                 playLetterChime(item._spokenLetter);
                 speakLetterAndWord(item._spokenLetter, item._spokenWord);
+            } else if (state.mode === 'balloon') {
+                playBalloonPop();
+                if (item._spokenWord) speakEnglishWord(item._spokenWord);
             } else {
                 playPopSound();
             }
