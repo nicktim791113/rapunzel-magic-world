@@ -1169,6 +1169,53 @@
             100% { transform: translateX(100px) scale(0.5); opacity: 0; }
         }
 
+        .item.crashed {
+            animation: crashShake 0.55s ease-out forwards;
+            filter: brightness(1.5) drop-shadow(0 0 14px #FF3030);
+            z-index: 30;
+        }
+
+        @keyframes crashShake {
+            0%   { transform: scale(1) rotate(0deg); }
+            15%  { transform: scale(1.18) rotate(-12deg); }
+            30%  { transform: scale(1.05) rotate(10deg); }
+            55%  { transform: scale(1.25) rotate(-6deg); opacity: 0.9; }
+            100% { transform: scale(0.45) rotate(20deg); opacity: 0; }
+        }
+
+        .crash-burst {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            display: grid;
+            place-items: center;
+            font-size: 100px;
+            pointer-events: none;
+            z-index: 40;
+            animation: crashBurst 0.85s ease-out forwards;
+            text-shadow: 0 0 30px #FFB300, 0 0 60px #FF4500;
+        }
+
+        @keyframes crashBurst {
+            0%   { transform: scale(0.3); opacity: 0; }
+            25%  { transform: scale(1.4); opacity: 1; }
+            70%  { transform: scale(1.8); opacity: 0.85; }
+            100% { transform: scale(2.4); opacity: 0; }
+        }
+
+        .screen-shake {
+            animation: screenShake 0.55s ease-in-out;
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            15% { transform: translate(-8px, 4px); }
+            30% { transform: translate(7px, -6px); }
+            45% { transform: translate(-5px, 6px); }
+            60% { transform: translate(6px, -3px); }
+            80% { transform: translate(-3px, 2px); }
+        }
+
         .primary-btn {
             min-width: 128px;
             min-height: 48px;
@@ -1789,13 +1836,27 @@
         const colorLabels = {
             '#FF6B6B': '紅氣球',
             '#54A0FF': '藍氣球',
-            '#FF9FF3': '紫氣球'
+            '#FF9FF3': '紫氣球',
+            '#FFD93D': '黃氣球',
+            '#6BCB77': '綠氣球',
+            '#FF8C42': '橘氣球',
+            '#FF6FA8': '粉紅氣球',
+            '#8B5A2B': '咖啡氣球',
+            '#2C3E50': '黑氣球',
+            '#F0F0F5': '白氣球'
         };
 
         const colorEnglishNames = {
             '#FF6B6B': 'red',
             '#54A0FF': 'blue',
-            '#FF9FF3': 'purple'
+            '#FF9FF3': 'purple',
+            '#FFD93D': 'yellow',
+            '#6BCB77': 'green',
+            '#FF8C42': 'orange',
+            '#FF6FA8': 'pink',
+            '#8B5A2B': 'brown',
+            '#2C3E50': 'black',
+            '#F0F0F5': 'white'
         };
 
         const alphabetItems = [
@@ -1831,7 +1892,13 @@
             '🍎': 'apple',
             '🍌': 'banana',
             '🍇': 'grapes',
-            '🍓': 'strawberry'
+            '🍓': 'strawberry',
+            '🍊': 'orange',
+            '🍉': 'watermelon',
+            '🍍': 'pineapple',
+            '🍑': 'peach',
+            '🍒': 'cherry',
+            '🍐': 'pear'
         };
 
         const spriteAssets = {
@@ -1858,7 +1925,10 @@
                 label: '氣球',
                 type: 'color',
                 missClass: 'miss-balloon',
-                items: ['#FF6B6B', '#54A0FF', '#FF9FF3'],
+                items: [
+                    '#FF6B6B', '#54A0FF', '#FF9FF3', '#FFD93D', '#6BCB77',
+                    '#FF8C42', '#FF6FA8', '#8B5A2B', '#2C3E50', '#F0F0F5'
+                ],
                 popText: '✨',
                 encouragements: ['氣球飛出魔法光！', '漂亮的顏色！', '樂佩看到了星星！']
             },
@@ -1866,7 +1936,7 @@
                 label: '水果',
                 type: 'emoji',
                 missClass: 'miss-fruit',
-                items: ['🍎', '🍌', '🍇', '🍓'],
+                items: ['🍎', '🍌', '🍇', '🍓', '🍊', '🍉', '🍍', '🍑', '🍒', '🍐'],
                 popText: 'Yum!',
                 encouragements: ['水果籃滿滿的！', '甜甜的魔法！', '好快的反應！']
             },
@@ -1878,7 +1948,13 @@
                     { emoji: '🐶', sound: 'dog' },
                     { emoji: '🐱', sound: 'cat' },
                     { emoji: '🦁', sound: 'lion' },
-                    { emoji: '🐘', sound: 'elephant' }
+                    { emoji: '🐘', sound: 'elephant' },
+                    { emoji: '🐮', sound: 'cow' },
+                    { emoji: '🐑', sound: 'sheep' },
+                    { emoji: '🐵', sound: 'monkey' },
+                    { emoji: '🐸', sound: 'frog' },
+                    { emoji: '🦆', sound: 'duck' },
+                    { emoji: '🐷', sound: 'pig' }
                 ],
                 popText: '❤',
                 encouragements: ['小動物打招呼！', '聽，是動物朋友！', '溫柔又準確！']
@@ -1888,11 +1964,16 @@
                 type: 'sound_object',
                 missClass: 'miss-vehicle',
                 items: [
-                    { emoji: '🚗', sound: 'car',   english: 'car',   direction: 'left-right' },
-                    { emoji: '🚌', sound: 'car',   english: 'bus',   direction: 'left-right' },
-                    { emoji: '🚂', sound: 'train', english: 'train', direction: 'left-right' },
-                    { emoji: '🚀', sound: 'plane', english: 'rocket', direction: 'bottom-up' },
-                    { emoji: '🚲', sound: 'bike',  english: 'bike',  direction: 'right-left' }
+                    { emoji: '🚗', sound: 'car',        english: 'car',        direction: 'ground-left-right' },
+                    { emoji: '🚌', sound: 'car',        english: 'bus',        direction: 'ground-left-right' },
+                    { emoji: '🚂', sound: 'train',      english: 'train',      direction: 'ground-left-right' },
+                    { emoji: '🚀', sound: 'plane',      english: 'rocket',     direction: 'bottom-up' },
+                    { emoji: '🚲', sound: 'bike',       english: 'bike',       direction: 'ground-right-left' },
+                    { emoji: '✈️', sound: 'plane',      english: 'airplane',   direction: 'sky-left-right' },
+                    { emoji: '🚁', sound: 'helicopter', english: 'helicopter', direction: 'sky-right-left' },
+                    { emoji: '🚓', sound: 'siren',      english: 'police car', direction: 'ground-right-left' },
+                    { emoji: '🚒', sound: 'siren',      english: 'fire truck', direction: 'ground-left-right' },
+                    { emoji: '🚑', sound: 'siren',      english: 'ambulance',  direction: 'ground-right-left' }
                 ],
                 popText: 'Vroom!',
                 encouragements: ['出發去冒險！', '車車跑得真快！', '交通魔法啟動！']
@@ -1960,6 +2041,7 @@
 
         let spawnTimer = null;
         let countdownTimer = null;
+        let collisionRafId = null;
         let audioCtx = null;
         let masterGain = null;
         let noiseBuffer = null;
@@ -2555,6 +2637,23 @@
                 gain.gain.setValueAtTime(0.36, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.15);
                 osc.start(t); osc.stop(t + 0.15);
+            } else if (type === 'pig') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, t);
+                osc.frequency.linearRampToValueAtTime(180, t + 0.12);
+                gain.gain.setValueAtTime(0.44, t);
+                gain.gain.linearRampToValueAtTime(0, t + 0.14);
+                osc.start(t); osc.stop(t + 0.14);
+
+                const osc2 = audioCtx.createOscillator();
+                const g2 = audioCtx.createGain();
+                osc2.connect(g2); connectSound(g2);
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(220, t + 0.18);
+                osc2.frequency.linearRampToValueAtTime(170, t + 0.30);
+                g2.gain.setValueAtTime(0.44, t + 0.18);
+                g2.gain.linearRampToValueAtTime(0, t + 0.32);
+                osc2.start(t + 0.18); osc2.stop(t + 0.32);
             } else {
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(100, t);
@@ -2618,6 +2717,19 @@
                 gain.gain.setValueAtTime(0.22, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.5);
                 osc.start(t); osc.stop(t + 0.5);
+            } else if (type === 'helicopter') {
+                // Four rapid chopping pulses
+                for (let i = 0; i < 4; i++) {
+                    const start = t + i * 0.09;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain); connectSound(gain);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(120, start);
+                    gain.gain.setValueAtTime(0.32, start);
+                    gain.gain.exponentialRampToValueAtTime(0.01, start + 0.07);
+                    osc.start(start); osc.stop(start + 0.07);
+                }
             } else {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -2628,6 +2740,108 @@
                 gain.gain.setValueAtTime(0.22, t);
                 gain.gain.linearRampToValueAtTime(0, t + 0.6);
                 osc.start(t); osc.stop(t + 0.6);
+            }
+        }
+
+        function playCrashSound() {
+            if (!audioCtx || state.muted) return;
+            const t = audioCtx.currentTime;
+            // White-noise burst + descending low square = mini explosion
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = getNoiseBuffer();
+            const nGain = audioCtx.createGain();
+            noise.connect(nGain);
+            connectSound(nGain);
+            nGain.gain.setValueAtTime(0.7, t);
+            nGain.gain.exponentialRampToValueAtTime(0.01, t + 0.45);
+            noise.start(t); noise.stop(t + 0.45);
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); connectSound(gain);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(220, t);
+            osc.frequency.exponentialRampToValueAtTime(60, t + 0.4);
+            gain.gain.setValueAtTime(0.6, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+            osc.start(t); osc.stop(t + 0.4);
+        }
+
+        function rectsOverlap(a, b, padding = 8) {
+            return (
+                a.left + padding < b.right - padding &&
+                a.right - padding > b.left + padding &&
+                a.top + padding < b.bottom - padding &&
+                a.bottom - padding > b.top + padding
+            );
+        }
+
+        function checkVehicleCollisions() {
+            const items = Array.from(state.activeItems).filter(it => it.parentElement && !it._missed && !it._crashed);
+            for (let i = 0; i < items.length; i++) {
+                const a = items[i].getBoundingClientRect();
+                if (a.width === 0 || a.height === 0) continue;
+                for (let j = i + 1; j < items.length; j++) {
+                    const b = items[j].getBoundingClientRect();
+                    if (b.width === 0 || b.height === 0) continue;
+                    if (rectsOverlap(a, b)) {
+                        triggerVehicleCrash(items[i], items[j]);
+                        return;
+                    }
+                }
+            }
+        }
+
+        function triggerVehicleCrash(a, b) {
+            if (!state.running || state.transitioning) return;
+            a._crashed = true;
+            b._crashed = true;
+            a._missed = true;
+            b._missed = true;
+            if (a._fallAnimation) a._fallAnimation.pause();
+            if (b._fallAnimation) b._fallAnimation.pause();
+            a.classList.add('crashed');
+            b.classList.add('crashed');
+            playCrashSound();
+            spawnCrashFlash(a, b);
+            state.transitioning = true;
+            cancelCollisionCheck();
+            clearTimeout(spawnTimer);
+            setTimeout(() => finishGame('crash'), 900);
+        }
+
+        function spawnCrashFlash(a, b) {
+            const ra = a.getBoundingClientRect();
+            const rb = b.getBoundingClientRect();
+            const cx = (Math.min(ra.left, rb.left) + Math.max(ra.right, rb.right)) / 2;
+            const cy = (Math.min(ra.top, rb.top) + Math.max(ra.bottom, rb.bottom)) / 2;
+            const burst = document.createElement('div');
+            burst.className = 'crash-burst';
+            burst.innerText = '💥';
+            burst.style.left = `${cx - 60}px`;
+            burst.style.top = `${cy - 60}px`;
+            container.appendChild(burst);
+            setTimeout(() => burst.remove(), 900);
+            container.classList.add('screen-shake');
+            setTimeout(() => container.classList.remove('screen-shake'), 600);
+        }
+
+        function startCollisionCheck() {
+            cancelCollisionCheck();
+            const tick = () => {
+                if (!state.running) { collisionRafId = null; return; }
+                if (state.mode === 'vehicle' && !state.paused && !state.transitioning) {
+                    checkVehicleCollisions();
+                }
+                collisionRafId = requestAnimationFrame(tick);
+            };
+            collisionRafId = requestAnimationFrame(tick);
+        }
+
+        function cancelCollisionCheck() {
+            if (collisionRafId !== null) {
+                cancelAnimationFrame(collisionRafId);
+                collisionRafId = null;
             }
         }
 
@@ -2822,6 +3036,7 @@
             scheduleSpawn();
             countdownTimer = setInterval(tickCountdown, 1000);
             startBackgroundMusic();
+            startCollisionCheck();
         }
 
         function startAdventure() {
@@ -2852,6 +3067,7 @@
             scheduleSpawn();
             countdownTimer = setInterval(tickCountdown, 1000);
             startBackgroundMusic();
+            startCollisionCheck();
         }
 
         function adventureGoalFor(level) {
@@ -2920,6 +3136,7 @@
             clearTimeout(spawnTimer);
             clearInterval(countdownTimer);
             stopBackgroundMusic();
+            cancelCollisionCheck();
             spawnTimer = null;
             countdownTimer = null;
         }
@@ -3050,7 +3267,7 @@
             }
         }
 
-        function finishGame() {
+        function finishGame(reason) {
             stopTimers();
             state.running = false;
             state.paused = false;
@@ -3069,16 +3286,21 @@
             finalCombo.innerText = state.bestCombo;
             finalLevel.innerText = state.level;
             finalCoins.innerText = `+${earnedCoins}`;
-            summaryTitle.innerText = state.playMode === 'adventure'
-                ? '十關冒險完成！'
-                : state.score >= 40 ? '金色魔法完成！' : '挑戰完成！';
-            summaryMessage.innerText = state.playMode === 'adventure'
-                ? (medals.length ? `完成旅程，解鎖 ${medals.join('、')}！` : '你完成了整段魔法旅程。')
-                : medals.length
-                    ? `解鎖 ${medals.join('、')}！`
-                    : state.score >= 40
-                        ? '樂佩的天燈都亮起來了。'
-                        : '再玩一次，下一輪會更亮。';
+            if (reason === 'crash') {
+                summaryTitle.innerText = '💥 撞車啦！';
+                summaryMessage.innerText = '車車相撞，遊戲結束！下次要更快點擊喔。';
+            } else {
+                summaryTitle.innerText = state.playMode === 'adventure'
+                    ? '十關冒險完成！'
+                    : state.score >= 40 ? '金色魔法完成！' : '挑戰完成！';
+                summaryMessage.innerText = state.playMode === 'adventure'
+                    ? (medals.length ? `完成旅程，解鎖 ${medals.join('、')}！` : '你完成了整段魔法旅程。')
+                    : medals.length
+                        ? `解鎖 ${medals.join('、')}！`
+                        : state.score >= 40
+                            ? '樂佩的天燈都亮起來了。'
+                            : '再玩一次，下一輪會更亮。';
+            }
             summaryScreen.style.display = 'flex';
         }
 
@@ -3167,13 +3389,24 @@
             let startX, startY, endTransform;
             if (vehicleChoice) {
                 const dir = vehicleChoice.direction;
-                if (dir === 'left-right') {
+                // Y bands tuned to the scene: sky region (top), ground region (just above grass line)
+                const groundY = window.innerHeight - itemHeight - Math.max(20, window.innerHeight * (0.04 + Math.random() * 0.06));
+                const skyY = window.innerHeight * (0.07 + Math.random() * 0.14);
+                if (dir === 'ground-left-right' || dir === 'left-right') {
                     startX = -itemWidth;
-                    startY = window.innerHeight * (0.45 + Math.random() * 0.25);
+                    startY = groundY;
                     endTransform = `translateX(${window.innerWidth + itemWidth * 2}px) translateY(0px) rotate(0deg)`;
-                } else if (dir === 'right-left') {
+                } else if (dir === 'ground-right-left' || dir === 'right-left') {
                     startX = window.innerWidth + itemWidth;
-                    startY = window.innerHeight * (0.45 + Math.random() * 0.25);
+                    startY = groundY;
+                    endTransform = `translateX(-${window.innerWidth + itemWidth * 2}px) translateY(0px) rotate(0deg)`;
+                } else if (dir === 'sky-left-right') {
+                    startX = -itemWidth;
+                    startY = skyY;
+                    endTransform = `translateX(${window.innerWidth + itemWidth * 2}px) translateY(0px) rotate(0deg)`;
+                } else if (dir === 'sky-right-left') {
+                    startX = window.innerWidth + itemWidth;
+                    startY = skyY;
                     endTransform = `translateX(-${window.innerWidth + itemWidth * 2}px) translateY(0px) rotate(0deg)`;
                 } else {
                     // bottom-up (rocket)
