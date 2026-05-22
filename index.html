@@ -1228,9 +1228,9 @@
 
         .summary-score {
             display: grid;
-            grid-template-columns: repeat(4, minmax(72px, 1fr));
-            gap: 10px;
-            width: min(92vw, 390px);
+            grid-template-columns: repeat(5, minmax(64px, 1fr));
+            gap: 8px;
+            width: min(94vw, 460px);
             margin: 10px 0 20px;
         }
 
@@ -1727,6 +1727,7 @@
                 <div><span>星星</span><strong id="final-score">0</strong></div>
                 <div><span>最高連擊</span><strong id="final-combo">0</strong></div>
                 <div><span>到達關卡</span><strong id="final-level">1</strong></div>
+                <div><span>沒點到</span><strong id="final-missed">0</strong></div>
                 <div><span>魔法幣</span><strong id="final-coins">0</strong></div>
             </div>
             <div class="summary-actions">
@@ -1744,18 +1745,20 @@
                     <section class="guide-section">
                         <h3>難度</h3>
                         <ul>
-                            <li>輕鬆：45 秒，物件較慢，12 分升關。</li>
-                            <li>標準：30 秒，標準速度，10 分升關。</li>
-                            <li>挑戰：25 秒，物件較快，8 分升關。</li>
+                            <li>所有難度都跑 <strong>8 分鐘</strong>，每分鐘速度與掉落數量倍增。</li>
+                            <li>輕鬆：基礎物件較慢。</li>
+                            <li>標準：基礎速度。</li>
+                            <li>挑戰：基礎物件較快、後期更瘋狂。</li>
                         </ul>
                     </section>
                     <section class="guide-section">
                         <h3>年齡模式</h3>
                         <ul>
-                            <li>幼兒：固定 60 秒，任務 3 個，關閉連擊。</li>
-                            <li>大童：使用難度時間，任務 5 個，開啟連擊。</li>
+                            <li>幼兒：8 分鐘，任務 3 個，關閉連擊。</li>
+                            <li>大童：8 分鐘，任務 5 個，開啟連擊。</li>
                             <li>幼兒 HUD 會保留星星與任務，隱藏時間、連擊、關卡、飄走。</li>
                             <li>英文字母：A-Z 掉落，點擊後播放對應英文單字發音。</li>
+                            <li>結算畫面會列出整局沒點到的物件數量。</li>
                         </ul>
                     </section>
                 </div>
@@ -1765,17 +1768,19 @@
     </div>
 
     <script>
-        const GAME_DURATION = 30;
+        const GAME_DURATION = 480; // 8 minutes
+        const MINUTE_SECONDS = 60;
         const INITIAL_SPAWN_MS = 1450;
-        const MIN_SPAWN_MS = 620;
+        const MIN_SPAWN_MS = 100; // floor so high minute-levels stay playable
         const INITIAL_FALL_MIN = 4300;
         const INITIAL_FALL_MAX = 6800;
+        const MIN_FALL_MS = 800;
         const COMBO_WINDOW_MS = 1250;
 
         const difficultyData = {
             easy: {
                 label: '輕鬆',
-                duration: 45,
+                duration: GAME_DURATION,
                 spawnMultiplier: 1.24,
                 fallMultiplier: 1.22,
                 levelStep: 12,
@@ -1783,7 +1788,7 @@
             },
             normal: {
                 label: '標準',
-                duration: 30,
+                duration: GAME_DURATION,
                 spawnMultiplier: 1,
                 fallMultiplier: 1,
                 levelStep: 10,
@@ -1791,7 +1796,7 @@
             },
             hard: {
                 label: '挑戰',
-                duration: 25,
+                duration: GAME_DURATION,
                 spawnMultiplier: 0.78,
                 fallMultiplier: 0.82,
                 levelStep: 8,
@@ -1802,7 +1807,7 @@
         const ageData = {
             toddler: {
                 label: '幼兒',
-                duration: 60,
+                duration: GAME_DURATION,
                 spawnMultiplier: 1.55,
                 fallMultiplier: 1.42,
                 missionGoal: 3,
@@ -1811,7 +1816,7 @@
             },
             child: {
                 label: '大童',
-                duration: null,
+                duration: GAME_DURATION,
                 spawnMultiplier: 1,
                 fallMultiplier: 1,
                 missionGoal: 5,
@@ -2136,6 +2141,7 @@
         const finalScore = document.getElementById('final-score');
         const finalCombo = document.getElementById('final-combo');
         const finalLevel = document.getElementById('final-level');
+        const finalMissed = document.getElementById('final-missed');
         const finalCoins = document.getElementById('final-coins');
         const summaryTitle = document.getElementById('summary-title');
         const summaryMessage = document.getElementById('summary-message');
@@ -2884,7 +2890,14 @@
         }
 
         function levelForScore(score) {
+            // Adventure mode still uses score-based progression
             return Math.min(8, 1 + Math.floor(score / difficultyData[state.difficulty].levelStep));
+        }
+
+        function levelForElapsedMinutes() {
+            // Challenge mode: each whole minute elapsed bumps the level (1..8)
+            const elapsed = GAME_DURATION - state.timeLeft;
+            return Math.min(8, 1 + Math.max(0, Math.floor(elapsed / MINUTE_SECONDS)));
         }
 
         function spawnDelayForLevel(level) {
@@ -2892,7 +2905,12 @@
             const age = ageData[state.ageMode];
             const powerup = state.activePowerups.slow ? 1.24 : 1;
             const base = INITIAL_SPAWN_MS * difficulty.spawnMultiplier * age.spawnMultiplier * powerup;
-            const floor = MIN_SPAWN_MS * difficulty.spawnMultiplier * age.spawnMultiplier;
+            if (state.playMode === 'challenge') {
+                // Halve the spawn delay every minute (level), floor at MIN_SPAWN_MS so the browser can keep up.
+                return Math.max(MIN_SPAWN_MS, base / Math.pow(2, level - 1));
+            }
+            // Adventure keeps the original linear ramp
+            const floor = 620 * difficulty.spawnMultiplier * age.spawnMultiplier;
             return Math.max(floor, base - (level - 1) * 115 * difficulty.levelRamp);
         }
 
@@ -2900,6 +2918,16 @@
             const difficulty = difficultyData[state.difficulty];
             const age = ageData[state.ageMode];
             const powerup = state.activePowerups.slow ? 1.22 : 1;
+            if (state.playMode === 'challenge') {
+                // Halve the fall duration every minute, floor at MIN_FALL_MS.
+                const baseMin = INITIAL_FALL_MIN * difficulty.fallMultiplier * age.fallMultiplier * powerup;
+                const baseMax = INITIAL_FALL_MAX * difficulty.fallMultiplier * age.fallMultiplier * powerup;
+                const factor = Math.pow(2, level - 1);
+                const min = Math.max(MIN_FALL_MS, baseMin / factor);
+                const max = Math.max(MIN_FALL_MS + 200, baseMax / factor);
+                return min + Math.random() * (max - min);
+            }
+            // Adventure keeps the original linear ramp
             const min = Math.max(1800, INITIAL_FALL_MIN * difficulty.fallMultiplier * age.fallMultiplier * powerup - (level - 1) * 240 * difficulty.levelRamp);
             const max = Math.max(2900, INITIAL_FALL_MAX * difficulty.fallMultiplier * age.fallMultiplier * powerup - (level - 1) * 260 * difficulty.levelRamp);
             return min + Math.random() * (max - min);
@@ -3127,6 +3155,14 @@
             if (state.playMode === 'adventure') return;
             state.timeLeft = Math.max(0, state.timeLeft - 1);
             updateStats();
+            // Promote the minute-level once every 60 elapsed seconds
+            const minuteLevel = levelForElapsedMinutes();
+            if (minuteLevel !== state.level) {
+                state.level = minuteLevel;
+                state.spawnMs = spawnDelayForLevel(state.level);
+                showToast(encourageToast, `第 ${state.level} 分鐘！速度加倍`);
+                scheduleSpawn();
+            }
             if (state.timeLeft <= 0 && state.playMode === 'challenge') {
                 finishGame();
             }
@@ -3285,6 +3321,7 @@
             finalScore.innerText = state.score;
             finalCombo.innerText = state.bestCombo;
             finalLevel.innerText = state.level;
+            finalMissed.innerText = state.missed;
             finalCoins.innerText = `+${earnedCoins}`;
             if (reason === 'crash') {
                 summaryTitle.innerText = '💥 撞車啦！';
@@ -3323,7 +3360,9 @@
         }
 
         function maybeLevelUp() {
-            if (state.playMode === 'adventure') return;
+            // Challenge mode now levels up purely by elapsed time (see tickCountdown).
+            // Adventure mode keeps the score-based progression.
+            if (state.playMode !== 'adventure') return;
             const nextLevel = levelForScore(state.score);
             if (nextLevel !== state.level) {
                 state.level = nextLevel;
