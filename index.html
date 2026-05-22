@@ -2252,21 +2252,6 @@
             musicBtn.setAttribute('aria-pressed', String(state.musicEnabled));
         }
 
-        function speakEncouragement() {
-            if (state.muted || !('speechSynthesis' in window)) return;
-            const words = state.ageMode === 'toddler'
-                ? ['好棒！', '再來一次！', '真厲害！']
-                : ['好棒！', '連擊成功！', '太精彩了！'];
-            const text = words[Math.floor(Math.random() * words.length)];
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'zh-TW';
-            utterance.rate = state.ageMode === 'toddler' ? 0.9 : 1;
-            utterance.pitch = 1.18;
-            utterance.volume = 0.82;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        }
-
         function speechEffectiveVolume(extra = 1) {
             if (state.muted) return 0;
             const v = Math.max(0, Math.min(1, state.sfxVolume * 1.25 * extra));
@@ -3255,9 +3240,13 @@
                 state.combo = 0;
                 updateStats();
                 animation.cancel();
-                item.style.top = `${endY}px`;
-                item.classList.add(modeData.missClass);
-                setTimeout(() => removeItem(item), 800);
+                if (state.mode === 'vehicle') {
+                    removeItem(item);
+                } else {
+                    item.style.top = `${endY}px`;
+                    item.classList.add(modeData.missClass);
+                    setTimeout(() => removeItem(item), 800);
+                }
             };
 
             item.addEventListener('pointerdown', (event) => {
@@ -3316,9 +3305,6 @@
 
             if (state.score % 7 === 0 || state.combo === 1) {
                 showToast(encourageToast, randomEncouragement());
-            }
-            if (state.mode !== 'alphabet' && (state.score % 4 === 0 || state.ageMode === 'toddler')) {
-                speakEncouragement();
             }
 
             removeItem(item);
