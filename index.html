@@ -3190,11 +3190,8 @@
         }
 
         function pickSpawnChoice(modeData) {
-            const missionMatch = state.mission
-                ? modeData.items.find(choice => itemMissionKey(choice, modeData) === state.mission.key)
-                : null;
-            const missionBias = state.playMode === 'adventure' ? 0.55 : 0.38;
-            if (missionMatch && Math.random() < missionBias) return missionMatch;
+            // Uniform random selection: every item in the mode shares the same spawn probability,
+            // including the mission target (no extra weighting).
             return modeData.items[Math.floor(Math.random() * modeData.items.length)];
         }
 
