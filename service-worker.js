@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapunzel-magic-world-v34';
+const CACHE_NAME = 'rapunzel-magic-world-v35';
 
 const APP_ASSETS = [
   './',
@@ -23,6 +23,8 @@ const APP_ASSETS = [
   './assets/images/items/vehicle-bike.png',
   './assets/images/items/vehicle-bus.png',
   './assets/images/items/vehicle-car.png',
+  './assets/images/items/vehicle-helicopter.png',
+  './assets/images/items/vehicle-plane.png',
   './assets/images/items/vehicle-rocket.png',
   './assets/images/items/vehicle-train.png'
 ];

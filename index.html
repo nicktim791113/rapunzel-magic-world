@@ -2070,11 +2070,13 @@
             '🐶': { file: 'assets/images/items/animal-dog.png', group: 'animal', label: '小狗' },
             '🐱': { file: 'assets/images/items/animal-cat.png', group: 'animal', label: '小貓' },
             '🐘': { file: 'assets/images/items/animal-elephant.png', group: 'animal', label: '大象' },
-            '🚗': { file: 'assets/images/items/vehicle-car.png', group: 'vehicle', label: '小汽車' },
-            '🚌': { file: 'assets/images/items/vehicle-bus.png', group: 'vehicle', label: '校車' },
-            '🚂': { file: 'assets/images/items/vehicle-train.png', group: 'vehicle', label: '火車' },
-            '🚀': { file: 'assets/images/items/vehicle-rocket.png', group: 'vehicle', label: '火箭' },
-            '🚲': { file: 'assets/images/items/vehicle-bike.png', group: 'vehicle', label: '腳踏車' }
+            '🚗': { file: 'assets/images/items/vehicle-car.png',        group: 'vehicle', label: '小汽車' },
+            '🚌': { file: 'assets/images/items/vehicle-bus.png',        group: 'vehicle', label: '校車'   },
+            '🚂': { file: 'assets/images/items/vehicle-train.png',      group: 'vehicle', label: '火車'   },
+            '🚀': { file: 'assets/images/items/vehicle-rocket.png',     group: 'vehicle', label: '火箭'   },
+            '🚲': { file: 'assets/images/items/vehicle-bike.png',       group: 'vehicle', label: '腳踏車' },
+            '✈️': { file: 'assets/images/items/vehicle-plane.png',      group: 'vehicle', label: '飛機'   },
+            '🚁': { file: 'assets/images/items/vehicle-helicopter.png', group: 'vehicle', label: '直升機' }
         };
 
         const gameData = {
@@ -2121,16 +2123,16 @@
                 type: 'sound_object',
                 missClass: 'miss-vehicle',
                 items: [
-                    { emoji: '🚗', sound: 'car',        english: 'car',        direction: 'ground-left-right', faces: 'left' },
-                    { emoji: '🚌', sound: 'car',        english: 'bus',        direction: 'ground-left-right', faces: 'left' },
-                    { emoji: '🚂', sound: 'train',      english: 'train',      direction: 'ground-left-right', faces: 'left' },
-                    { emoji: '🚀', sound: 'plane',      english: 'rocket',     direction: 'bottom-up',         faces: 'up'   },
-                    { emoji: '🚲', sound: 'bike',       english: 'bike',       direction: 'ground-right-left', faces: 'left' },
-                    { emoji: '✈️', sound: 'plane',      english: 'airplane',   direction: 'sky-left-right',    faces: 'right', art: 'plane' },
-                    { emoji: '🚁', sound: 'helicopter', english: 'helicopter', direction: 'sky-right-left',    faces: 'right', art: 'helicopter' },
-                    { emoji: '🚓', sound: 'siren',      english: 'police car', direction: 'ground-right-left', faces: 'left' },
-                    { emoji: '🚒', sound: 'siren',      english: 'fire truck', direction: 'ground-left-right', faces: 'left' },
-                    { emoji: '🚑', sound: 'siren',      english: 'ambulance',  direction: 'ground-right-left', faces: 'left' }
+                    { emoji: '🚗', sound: 'car',        english: 'car',        direction: 'ground-left-right', faces: 'left'  },
+                    { emoji: '🚌', sound: 'car',        english: 'bus',        direction: 'ground-left-right', faces: 'right' },
+                    { emoji: '🚂', sound: 'train',      english: 'train',      direction: 'ground-left-right', faces: 'left'  },
+                    { emoji: '🚀', sound: 'plane',      english: 'rocket',     direction: 'bottom-up',         faces: 'up'    },
+                    { emoji: '🚲', sound: 'bike',       english: 'bike',       direction: 'ground-right-left', faces: 'left'  },
+                    { emoji: '✈️', sound: 'plane',      english: 'airplane',   direction: 'sky-left-right',    faces: 'left'  },
+                    { emoji: '🚁', sound: 'helicopter', english: 'helicopter', direction: 'sky-right-left',    faces: 'left'  },
+                    { emoji: '🚓', sound: 'siren',      english: 'police car', direction: 'ground-right-left', faces: 'left'  },
+                    { emoji: '🚒', sound: 'siren',      english: 'fire truck', direction: 'ground-left-right', faces: 'left'  },
+                    { emoji: '🚑', sound: 'siren',      english: 'ambulance',  direction: 'ground-right-left', faces: 'left'  }
                 ],
                 popText: 'Vroom!',
                 encouragements: ['出發去冒險！', '車車跑得真快！', '交通魔法啟動！']
