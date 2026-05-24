@@ -227,7 +227,12 @@
             align-items: center;
             text-align: center;
             z-index: 100;
-            padding: 22px;
+            /* iOS PWA: pad the overlays past the notch and home indicator so titles/buttons
+               are not hidden by the system UI. Falls back to 22px on devices with no insets. */
+            padding: max(22px, env(safe-area-inset-top))
+                     max(22px, env(safe-area-inset-right))
+                     max(22px, env(safe-area-inset-bottom))
+                     max(22px, env(safe-area-inset-left));
         }
 
         #menu-screen {
@@ -236,7 +241,11 @@
             gap: 0;
             justify-content: flex-start;
             overflow-y: auto;
-            padding: clamp(12px, 2vh, 22px);
+            /* Tighter horizontal padding, but always honour the safe-area top/bottom. */
+            padding: max(clamp(12px, 2vh, 22px), env(safe-area-inset-top))
+                     max(clamp(12px, 2vh, 22px), env(safe-area-inset-right))
+                     max(clamp(12px, 2vh, 22px), env(safe-area-inset-bottom))
+                     max(clamp(12px, 2vh, 22px), env(safe-area-inset-left));
         }
 
         #summary-screen,
@@ -253,7 +262,11 @@
             align-items: center;
             justify-content: center;
             z-index: 180;
-            padding: 18px;
+            /* Respect iOS notch / home indicator so the dialog never hides under them. */
+            padding: max(18px, env(safe-area-inset-top))
+                     max(18px, env(safe-area-inset-right))
+                     max(18px, env(safe-area-inset-bottom))
+                     max(18px, env(safe-area-inset-left));
             background: rgba(45, 28, 60, 0.32);
             backdrop-filter: blur(5px);
         }
@@ -685,9 +698,11 @@
 
         #hud {
             position: absolute;
-            top: 12px;
-            left: 12px;
-            right: 12px;
+            /* iOS PWA: keep the stats board and control buttons out of the notch / rounded
+               corners. On devices with no insets these collapse to the original 12px. */
+            top: max(12px, env(safe-area-inset-top));
+            left: max(12px, env(safe-area-inset-left));
+            right: max(12px, env(safe-area-inset-right));
             display: none;
             align-items: flex-start;
             justify-content: space-between;
