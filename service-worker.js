@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapunzel-magic-world-v35';
+const CACHE_NAME = 'rapunzel-magic-world-v36';
 
 const APP_ASSETS = [
   './',
@@ -10,9 +10,15 @@ const APP_ASSETS = [
   './assets/audio/the-glade-at-dawn.mp3',
   './assets/audio/where-the-sunbeams-hide.mp3',
   './assets/images/items/animal-cat.png',
+  './assets/images/items/animal-cow.png',
   './assets/images/items/animal-dog.png',
+  './assets/images/items/animal-duck.png',
   './assets/images/items/animal-elephant.png',
+  './assets/images/items/animal-frog.png',
   './assets/images/items/animal-lion.png',
+  './assets/images/items/animal-monkey.png',
+  './assets/images/items/animal-pig.png',
+  './assets/images/items/animal-sheep.png',
   './assets/images/items/balloon-blue.png',
   './assets/images/items/balloon-purple.png',
   './assets/images/items/balloon-red.png',
@@ -20,11 +26,14 @@ const APP_ASSETS = [
   './assets/images/items/fruit-banana.png',
   './assets/images/items/fruit-grapes.png',
   './assets/images/items/fruit-strawberry.png',
+  './assets/images/items/vehicle-ambulance.png',
   './assets/images/items/vehicle-bike.png',
   './assets/images/items/vehicle-bus.png',
   './assets/images/items/vehicle-car.png',
+  './assets/images/items/vehicle-firetruck.png',
   './assets/images/items/vehicle-helicopter.png',
   './assets/images/items/vehicle-plane.png',
+  './assets/images/items/vehicle-police.png',
   './assets/images/items/vehicle-rocket.png',
   './assets/images/items/vehicle-train.png'
 ];
