@@ -798,22 +798,24 @@
             opacity: 0;
         }
 
+        /* Floating toasts sit just below the HUD; add safe-area-top so they don't
+           creep under the iPhone notch / Dynamic Island in PWA mode. */
         #combo-toast {
-            top: 86px;
+            top: calc(86px + env(safe-area-inset-top));
             color: var(--pink);
             font-size: clamp(1.25rem, 4vw, 2.2rem);
             font-weight: 900;
         }
 
         #encourage-toast {
-            top: 132px;
+            top: calc(132px + env(safe-area-inset-top));
             color: var(--purple);
             font-size: clamp(1rem, 3vw, 1.45rem);
             font-weight: 800;
         }
 
         #mission-toast {
-            top: 178px;
+            top: calc(178px + env(safe-area-inset-top));
             color: #0C7C59;
             font-size: clamp(1rem, 3vw, 1.35rem);
             font-weight: 900;

@@ -32,7 +32,12 @@
 
 ---
 
-## 2026-05-25 — pending — 建立更新紀錄機制
+## 2026-05-25 — pending — PWA safe-area 補強 + 強制更新快取
+
+- 🐛 浮動 toast（連擊 / 鼓勵 / 任務）的 `top` 加上 `env(safe-area-inset-top)`，避免在 iPhone 瀏海/Dynamic Island 下被遮住
+- 📦 `service-worker.js` 從 `v37` bump 到 `v38`，強制已安裝的 PWA 拋棄舊快取、抓新版 `index.html`（先前的 safe-area 修正一直被 v37 快取卡住沒生效）
+
+## 2026-05-25 — 23cb423 — 建立更新紀錄機制
 
 - 📦 新增 `CHANGELOG.md`：規範分類圖示、區塊格式、撰寫流程
 - 📦 `CLAUDE.md` Standard Loop 第 4 步補上「更新 CHANGELOG.md」的義務
