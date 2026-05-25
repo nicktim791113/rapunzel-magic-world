@@ -3677,7 +3677,8 @@
             } else {
                 const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
                 startX = 12 + Math.random() * maxX;
-                startY = -itemHeight;
+                // Balloons float up from below the viewport; everything else still falls in from above.
+                startY = state.mode === 'balloon' ? window.innerHeight + itemHeight : -itemHeight;
             }
             item.style.left = `${startX}px`;
             item.style.top = `${startY}px`;
@@ -3716,21 +3717,34 @@
 
             const endY = window.innerHeight - itemHeight - 22;
             const endRotation = state.mode === 'alphabet' ? (Math.random() * 20 - 10) : (Math.random() * 60 - 30);
-            const animation = vehicleChoice
-                ? item.animate([
+            let animation;
+            if (vehicleChoice) {
+                animation = item.animate([
                     { transform: 'translateX(0px) translateY(0px) rotate(0deg)' },
                     { transform: endTransform }
                 ], {
                     duration: fallDurationForLevel(state.level),
                     easing: 'linear'
-                })
-                : item.animate([
+                });
+            } else if (state.mode === 'balloon') {
+                // Balloons drift upward off the top of the screen, with a gentle horizontal sway.
+                const driftX = Math.random() * 60 - 30;
+                animation = item.animate([
+                    { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
+                    { transform: `translateY(-${window.innerHeight + itemHeight * 2}px) translateX(${driftX}px) rotate(${endRotation}deg)` }
+                ], {
+                    duration: fallDurationForLevel(state.level),
+                    easing: 'linear'
+                });
+            } else {
+                animation = item.animate([
                     { transform: 'translateY(0px) rotate(0deg)' },
                     { transform: `translateY(${window.innerHeight}px) rotate(${endRotation}deg)` }
                 ], {
                     duration: fallDurationForLevel(state.level),
                     easing: 'linear'
                 });
+            }
 
             item._fallAnimation = animation;
             item._missed = false;
@@ -3742,7 +3756,8 @@
                 state.combo = 0;
                 updateStats();
                 animation.cancel();
-                if (state.mode === 'vehicle') {
+                if (state.mode === 'vehicle' || state.mode === 'balloon') {
+                    // Already drifted off-screen — no extra miss animation needed.
                     removeItem(item);
                 } else {
                     item.style.top = `${endY}px`;
@@ -3779,7 +3794,11 @@
                 speakLetterAndWord(item._spokenLetter, item._spokenWord);
             } else if (state.mode === 'balloon') {
                 playBalloonPop();
-                if (item._spokenWord) speakEnglishWord(item._spokenWord);
+                if (item._spokenWord) {
+                    // Let the pop sound finish first, THEN say the colour name.
+                    const colorWord = item._spokenWord;
+                    setTimeout(() => speakEnglishWord(colorWord), 250);
+                }
             } else if (state.mode === 'fruit') {
                 playSliceSound();
                 if (item._spokenWord) speakEnglishWord(item._spokenWord);
