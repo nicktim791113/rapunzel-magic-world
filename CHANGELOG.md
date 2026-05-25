@@ -32,7 +32,15 @@
 
 ---
 
-## 2026-05-25 — pending — PWA safe-area 補強 + 強制更新快取
+## 2026-05-25 — pending — PWA safe-area 根治：移到 body 級
+
+- 🐛 之前在個別元素（HUD、overlay、toast）加 `env(safe-area-inset-*)` 還是會有東西貼到瀏海/Home Indicator（特別是 items、scenery、未列出的子元素）。
+- 🐛 改成在 **`<body>`** 直接加四向 `env(safe-area-inset-*)` padding + `box-sizing: border-box`，讓 `#game-container` 縮成 `width:100%/height:100%`（= body 內容區 = safe zone）。所有子元素（HUD、items、塔樓、結算頁、按鈕等）自然全部活在 safe area 之內。
+- 🎨 body 與 game-container 套同一段 sky→grass 漸層，所以 safe-area 邊緣與遊戲區無縫接合，瀏海下面仍是漸層而不是黑邊。
+- 🔁 把上一輪在 HUD / overlay / guide-modal / toast 加的 `env(...)` 還原成原本的 px，避免雙重 padding 把內容壓得太小。
+- 📦 `service-worker.js` v38 → **v39**，再次強制 PWA 抓新版（v38 還是會被某些裝置的舊 install 卡住）。
+
+## 2026-05-25 — 1660fc8 — PWA safe-area 補強 + 強制更新快取
 
 - 🐛 浮動 toast（連擊 / 鼓勵 / 任務）的 `top` 加上 `env(safe-area-inset-top)`，避免在 iPhone 瀏海/Dynamic Island 下被遮住
 - 📦 `service-worker.js` 從 `v37` bump 到 `v38`，強制已安裝的 PWA 拋棄舊快取、抓新版 `index.html`（先前的 safe-area 修正一直被 v37 快取卡住沒生效）

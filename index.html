@@ -33,8 +33,17 @@
         }
 
         body {
+            /* Lock the document to the viewport and reserve the iPhone notch /
+               Home Indicator zones as padding. The matching gradient lives on
+               both <body> and #game-container so the safe-area strip blends
+               into the playfield. */
             margin: 0;
-            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            padding-top: env(safe-area-inset-top);
+            padding-right: env(safe-area-inset-right);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
             overflow: hidden;
             background: linear-gradient(180deg, #9DE6FF 0%, #FFE7A8 73%, #95D875 73%, #49A752 100%);
             color: var(--ink);
@@ -49,11 +58,17 @@
         }
 
         #game-container {
+            /* Fill exactly the body's content box (= viewport - safe-area).
+               Everything inside this container — scenery, HUD, items, overlays —
+               automatically lives inside the safe area, so the notch can never
+               cover anything and the Home Indicator can never clip the bottom.
+               Background is left transparent so <body>'s gradient shows through
+               continuously, including under the notch/home-indicator strips. */
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            background: linear-gradient(180deg, #9DE6FF 0%, #FFE7A8 73%, #95D875 73%, #49A752 100%);
+            background: transparent;
         }
 
         #game-container::before {
@@ -227,12 +242,9 @@
             align-items: center;
             text-align: center;
             z-index: 100;
-            /* iOS PWA: pad the overlays past the notch and home indicator so titles/buttons
-               are not hidden by the system UI. Falls back to 22px on devices with no insets. */
-            padding: max(22px, env(safe-area-inset-top))
-                     max(22px, env(safe-area-inset-right))
-                     max(22px, env(safe-area-inset-bottom))
-                     max(22px, env(safe-area-inset-left));
+            /* Safe-area is now handled by <body> padding, so these overlays only
+               need their original visual padding. */
+            padding: 22px;
         }
 
         #menu-screen {
@@ -241,11 +253,7 @@
             gap: 0;
             justify-content: flex-start;
             overflow-y: auto;
-            /* Tighter horizontal padding, but always honour the safe-area top/bottom. */
-            padding: max(clamp(12px, 2vh, 22px), env(safe-area-inset-top))
-                     max(clamp(12px, 2vh, 22px), env(safe-area-inset-right))
-                     max(clamp(12px, 2vh, 22px), env(safe-area-inset-bottom))
-                     max(clamp(12px, 2vh, 22px), env(safe-area-inset-left));
+            padding: clamp(12px, 2vh, 22px);
         }
 
         #summary-screen,
@@ -262,11 +270,7 @@
             align-items: center;
             justify-content: center;
             z-index: 180;
-            /* Respect iOS notch / home indicator so the dialog never hides under them. */
-            padding: max(18px, env(safe-area-inset-top))
-                     max(18px, env(safe-area-inset-right))
-                     max(18px, env(safe-area-inset-bottom))
-                     max(18px, env(safe-area-inset-left));
+            padding: 18px;
             background: rgba(45, 28, 60, 0.32);
             backdrop-filter: blur(5px);
         }
@@ -698,11 +702,9 @@
 
         #hud {
             position: absolute;
-            /* iOS PWA: keep the stats board and control buttons out of the notch / rounded
-               corners. On devices with no insets these collapse to the original 12px. */
-            top: max(12px, env(safe-area-inset-top));
-            left: max(12px, env(safe-area-inset-left));
-            right: max(12px, env(safe-area-inset-right));
+            top: 12px;
+            left: 12px;
+            right: 12px;
             display: none;
             align-items: flex-start;
             justify-content: space-between;
@@ -798,24 +800,22 @@
             opacity: 0;
         }
 
-        /* Floating toasts sit just below the HUD; add safe-area-top so they don't
-           creep under the iPhone notch / Dynamic Island in PWA mode. */
         #combo-toast {
-            top: calc(86px + env(safe-area-inset-top));
+            top: 86px;
             color: var(--pink);
             font-size: clamp(1.25rem, 4vw, 2.2rem);
             font-weight: 900;
         }
 
         #encourage-toast {
-            top: calc(132px + env(safe-area-inset-top));
+            top: 132px;
             color: var(--purple);
             font-size: clamp(1rem, 3vw, 1.45rem);
             font-weight: 800;
         }
 
         #mission-toast {
-            top: calc(178px + env(safe-area-inset-top));
+            top: 178px;
             color: #0C7C59;
             font-size: clamp(1rem, 3vw, 1.35rem);
             font-weight: 900;
