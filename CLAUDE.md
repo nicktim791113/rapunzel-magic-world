@@ -44,9 +44,18 @@ GitHub repo：<https://github.com/nicktim791113/rapunzel-magic-world>
    ```
    index.html 內嵌長 JS，這個小指令可在 commit 前抓到語法錯誤。
 
-4. **提交 + 推送（一氣呵成）**
+4. **更新 `CHANGELOG.md`**（必做）
+   在檔案**最上方**插入一個新區塊（格式見 `CHANGELOG.md` 開頭說明）：
+   ```markdown
+   ## YYYY-MM-DD — pending — <主題一句話>
+
+   - ✨/🎨/🔊/🛠/🐛/🔁/📦 條列 1–5 點關鍵改動
+   ```
+   `pending` 是 placeholder，commit 完拿到 hash 後可在「下一次」commit 一起補正（不要 `git commit --amend`）。
+
+5. **提交 + 推送（一氣呵成）**
    ```bash
-   git add <specific-files>          # 不要 git add -A，避免納入 .claude/ 等暫存
+   git add <specific-files> CHANGELOG.md   # 不要 git add -A，避免納入 .claude/ 等暫存
    git commit -m "$(cat <<'EOF'
    Imperative subject line under 70 chars
 
@@ -87,8 +96,11 @@ GitHub repo：<https://github.com/nicktim791113/rapunzel-magic-world>
 | `assets/audio/` | 背景音樂；視為唯讀，避免覆寫 |
 | `assets/icons/` | App 圖示 |
 | `README.md` | 玩家視角的版本變更紀錄 |
-| `progress.md` | 開發者視角的 chronological 工作日誌 |
+| `progress.md` | 開發者視角的 chronological 工作日誌（舊；可看更早歷史） |
+| `CHANGELOG.md` | 每次 push 後追加的更新紀錄（最新在最上） |
 | `CLAUDE.md` | 本檔案 — 開發規則 |
+| `scripts/remove_bg.py` | 把 ChatGPT 輸出的近白色背景做 corner flood-fill 去背 |
+| `scripts/split_fruit_composite.py` | 切割合成圖（上半整顆/下半左右半）成 3 個 sprite |
 
 ### `index.html` 內部分區位置（行號會浮動，用搜尋字串）
 
