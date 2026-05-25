@@ -2,3 +2,5 @@
 Thumbs.db
 output/
 .claude/
+__pycache__/
+*.pyc

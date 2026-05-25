@@ -1146,6 +1146,50 @@
             box-shadow: none !important;
         }
 
+        .fruit-half {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: var(--half-image);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            filter: drop-shadow(0 6px 8px rgba(48, 38, 54, 0.25));
+            will-change: transform, opacity;
+        }
+        .fruit-half-left {
+            animation: fruitSliceLeft 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+        }
+        .fruit-half-right {
+            animation: fruitSliceRight 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+        }
+        @keyframes fruitSliceLeft {
+            0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-90px, 110px) rotate(-45deg); opacity: 0; }
+        }
+        @keyframes fruitSliceRight {
+            0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(90px, 110px) rotate(45deg); opacity: 0; }
+        }
+        .slice-trail {
+            position: absolute;
+            pointer-events: none;
+            z-index: 35;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,213,165,0.7) 40%, rgba(255,213,165,0) 70%);
+            animation: sliceTrailFade 0.42s ease-out forwards;
+            mix-blend-mode: screen;
+        }
+        @keyframes sliceTrailFade {
+            0%   { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.4); }
+        }
+
         .letter-style {
             flex-direction: column;
             gap: 1px;
@@ -2077,10 +2121,16 @@
             '#FF6B6B': { file: 'assets/images/items/balloon-red.png', group: 'balloon', label: '紅氣球' },
             '#54A0FF': { file: 'assets/images/items/balloon-blue.png', group: 'balloon', label: '藍氣球' },
             '#FF9FF3': { file: 'assets/images/items/balloon-purple.png', group: 'balloon', label: '紫氣球' },
-            '🍎': { file: 'assets/images/items/fruit-apple.png', group: 'fruit', label: '蘋果' },
-            '🍌': { file: 'assets/images/items/fruit-banana.png', group: 'fruit', label: '香蕉' },
-            '🍇': { file: 'assets/images/items/fruit-grapes.png', group: 'fruit', label: '葡萄' },
+            '🍎': { file: 'assets/images/items/fruit-apple.png',      group: 'fruit', label: '蘋果' },
+            '🍌': { file: 'assets/images/items/fruit-banana.png',     group: 'fruit', label: '香蕉' },
+            '🍇': { file: 'assets/images/items/fruit-grapes.png',     group: 'fruit', label: '葡萄' },
             '🍓': { file: 'assets/images/items/fruit-strawberry.png', group: 'fruit', label: '草莓' },
+            '🍊': { file: 'assets/images/items/fruit-orange.png',     group: 'fruit', label: '柳橙' },
+            '🍉': { file: 'assets/images/items/fruit-watermelon.png', group: 'fruit', label: '西瓜' },
+            '🍍': { file: 'assets/images/items/fruit-pineapple.png',  group: 'fruit', label: '鳳梨' },
+            '🍑': { file: 'assets/images/items/fruit-peach.png',      group: 'fruit', label: '桃子' },
+            '🍒': { file: 'assets/images/items/fruit-cherry.png',     group: 'fruit', label: '櫻桃' },
+            '🍐': { file: 'assets/images/items/fruit-pear.png',       group: 'fruit', label: '梨子' },
             '🦁': { file: 'assets/images/items/animal-lion.png',     group: 'animal', label: '獅子' },
             '🐶': { file: 'assets/images/items/animal-dog.png',      group: 'animal', label: '小狗' },
             '🐱': { file: 'assets/images/items/animal-cat.png',      group: 'animal', label: '小貓' },
@@ -3674,6 +3724,23 @@
                     startY = window.innerHeight + itemHeight;
                     endTransform = `translateX(0px) translateY(-${window.innerHeight + itemHeight * 2}px) rotate(${(Math.random() * 10 - 5).toFixed(1)}deg)`;
                 }
+            } else if (state.mode === 'fruit') {
+                // Fruit-ninja launch: pick one of 5 horizontal lanes with a centre-heavy
+                // probability distribution, then arc up to that lane's peak and fall back.
+                const zonesPx = [0.15, 0.35, 0.50, 0.65, 0.85].map(p => p * window.innerWidth);
+                const zoneWeights = [0.10, 0.18, 0.40, 0.22, 0.10];
+                let pickRoll = Math.random();
+                let zoneIdx = zonesPx.length - 1;
+                for (let i = 0; i < zoneWeights.length; i++) {
+                    if (pickRoll < zoneWeights[i]) { zoneIdx = i; break; }
+                    pickRoll -= zoneWeights[i];
+                }
+                const peakX = zonesPx[zoneIdx] + (Math.random() * 80 - 40);
+                const peakY = window.innerHeight * (0.08 + Math.random() * 0.16);
+                startX = Math.max(40, Math.min(window.innerWidth - itemWidth - 40, peakX + (Math.random() * 220 - 110)));
+                startY = window.innerHeight + itemHeight;
+                const endX = 2 * peakX - startX;
+                item._fruitArc = { startX, startY, peakX, peakY, endX };
             } else {
                 const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
                 startX = 12 + Math.random() * maxX;
@@ -3736,6 +3803,20 @@
                     duration: fallDurationForLevel(state.level),
                     easing: 'linear'
                 });
+            } else if (state.mode === 'fruit' && item._fruitArc) {
+                // Parabolic toss: ease-out on the way up, ease-in on the way back down.
+                const arc = item._fruitArc;
+                const peakDX = arc.peakX - arc.startX;
+                const peakDY = arc.peakY - arc.startY;
+                const endDX = arc.endX - arc.startX;
+                animation = item.animate([
+                    { transform: 'translateX(0px) translateY(0px) rotate(0deg)', easing: 'ease-out' },
+                    { transform: `translateX(${peakDX}px) translateY(${peakDY}px) rotate(${endRotation * 0.5}deg)`, offset: 0.5, easing: 'ease-in' },
+                    { transform: `translateX(${endDX}px) translateY(0px) rotate(${endRotation}deg)` }
+                ], {
+                    duration: fallDurationForLevel(state.level),
+                    easing: 'linear'
+                });
             } else {
                 animation = item.animate([
                     { transform: 'translateY(0px) rotate(0deg)' },
@@ -3756,8 +3837,8 @@
                 state.combo = 0;
                 updateStats();
                 animation.cancel();
-                if (state.mode === 'vehicle' || state.mode === 'balloon') {
-                    // Already drifted off-screen — no extra miss animation needed.
+                if (state.mode === 'vehicle' || state.mode === 'balloon' || state.mode === 'fruit') {
+                    // Already drifted / fell off-screen — no extra miss animation needed.
                     removeItem(item);
                 } else {
                     item.style.top = `${endY}px`;
@@ -3800,8 +3881,8 @@
                     setTimeout(() => speakEnglishWord(colorWord), 250);
                 }
             } else if (state.mode === 'fruit') {
-                playSliceSound();
-                if (item._spokenWord) speakEnglishWord(item._spokenWord);
+                // Fruit mode is swipe-only — taps without movement are intentionally ignored.
+                return;
             } else {
                 playPopSound();
             }
@@ -3843,6 +3924,62 @@
             } else {
                 showToast(missionToast, `找到 ${state.mission.label}`);
             }
+        }
+
+        function sliceFruit(item) {
+            if (!state.running || state.paused || item._sliced || item._missed) return;
+            item._sliced = true;
+            if (item._fallAnimation) item._fallAnimation.pause();
+
+            const sprite = spriteCellForKey(item._missionKey);
+            if (sprite) {
+                const basePath = sprite.file.replace(/\.png$/, '');
+                const wholeImg = item.querySelector('.sprite-image');
+                if (wholeImg) wholeImg.style.display = 'none';
+                const halfL = document.createElement('span');
+                halfL.className = 'fruit-half fruit-half-left';
+                halfL.style.setProperty('--half-image', `url("${basePath}-half-left.png")`);
+                item.appendChild(halfL);
+                const halfR = document.createElement('span');
+                halfR.className = 'fruit-half fruit-half-right';
+                halfR.style.setProperty('--half-image', `url("${basePath}-half-right.png")`);
+                item.appendChild(halfR);
+            }
+
+            playSliceSound();
+            if (item._spokenWord) speakEnglishWord(item._spokenWord);
+
+            const rect = item.getBoundingClientRect();
+            showPopText(rect.left, rect.top, Math.max(rect.width, rect.height), item._spokenWord || 'Yum!');
+
+            if (ageData[state.ageMode].comboEnabled) {
+                updateCombo();
+            } else {
+                state.combo = 0;
+            }
+            let gained = ageData[state.ageMode].comboEnabled && state.combo >= 5 ? 2 : 1;
+            if (state.activePowerups.magnetHits > 0) {
+                state.activePowerups.magnetHits--;
+                gained += 1;
+            }
+            state.score += gained;
+            updateMissionProgress(item._missionKey);
+            maybeLevelUp();
+            if (state.score % 7 === 0 || state.combo === 1) {
+                showToast(encourageToast, randomEncouragement());
+            }
+            updateStats();
+
+            setTimeout(() => removeItem(item), 700);
+        }
+
+        function spawnSliceTrail(x, y) {
+            const dot = document.createElement('div');
+            dot.className = 'slice-trail';
+            dot.style.left = `${x - 7}px`;
+            dot.style.top = `${y - 7}px`;
+            container.appendChild(dot);
+            setTimeout(() => dot.remove(), 420);
         }
 
         function removeItem(item) {
@@ -4061,32 +4198,46 @@
         }, { passive: false });
 
         // Fruit Ninja-style swipe detection for fruit mode.
-        // Coexists with the per-item pointerdown listener so a plain tap still works.
+        // Plain taps do nothing in fruit mode — the player must drag their pointer
+        // across a fruit before it counts as a slice.
         let swipeState = null;
-        const SWIPE_MIN_DISTANCE = 25;
+        const SWIPE_MIN_DISTANCE = 20;
+        const SLICE_TRAIL_STEP = 18; // pixels between trail dots
 
         container.addEventListener('pointerdown', (event) => {
             if (state.mode !== 'fruit' || !state.running || state.paused) return;
             swipeState = {
                 startX: event.clientX,
                 startY: event.clientY,
+                lastTrailX: event.clientX,
+                lastTrailY: event.clientY,
+                triggered: false,
                 sliced: new Set()
             };
         });
 
         container.addEventListener('pointermove', (event) => {
-            if (!swipeState) return;
+            if (!swipeState || state.mode !== 'fruit') return;
             const dx = event.clientX - swipeState.startX;
             const dy = event.clientY - swipeState.startY;
-            if (Math.hypot(dx, dy) < SWIPE_MIN_DISTANCE) return;
-            const fruits = container.querySelectorAll('.item');
-            fruits.forEach((fruit) => {
-                if (swipeState.sliced.has(fruit) || fruit._missed) return;
+            const distance = Math.hypot(dx, dy);
+            if (!swipeState.triggered && distance < SWIPE_MIN_DISTANCE) return;
+            swipeState.triggered = true;
+            // Sparkle trail follows the finger after the swipe threshold is crossed.
+            const tdx = event.clientX - swipeState.lastTrailX;
+            const tdy = event.clientY - swipeState.lastTrailY;
+            if (Math.hypot(tdx, tdy) >= SLICE_TRAIL_STEP) {
+                spawnSliceTrail(event.clientX, event.clientY);
+                swipeState.lastTrailX = event.clientX;
+                swipeState.lastTrailY = event.clientY;
+            }
+            container.querySelectorAll('.item').forEach((fruit) => {
+                if (swipeState.sliced.has(fruit) || fruit._missed || fruit._sliced) return;
                 const r = fruit.getBoundingClientRect();
                 if (event.clientX >= r.left && event.clientX <= r.right &&
                     event.clientY >= r.top && event.clientY <= r.bottom) {
                     swipeState.sliced.add(fruit);
-                    handleInteract(event, fruit, 'default', Math.max(r.width, r.height), gameData.fruit);
+                    sliceFruit(fruit);
                 }
             });
         });
