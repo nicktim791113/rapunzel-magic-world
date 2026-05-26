@@ -39,6 +39,8 @@ Original prompt: 優先改善這幾個地方也都要實作上去，並推上去
 - Implemented V2.9 PWA support: added manifest metadata, iPhone/iPad home-screen tags, generated app icons, registered a service worker, and cached the game shell/assets for installable use.
 - Ran the develop-web-game Playwright client for V2.9 and reviewed mobile PWA screenshots; ran a PWA-specific Playwright check verifying manifest metadata, app icons, service worker control, cached app shell assets, offline menu reload, and offline range responses for cached audio.
 - Ran V2.9 layout fit checks across iPhone 390x844, iPhone Pro Max 430x932, iPad 820x1180, iPad landscape 1180x820, and desktop 1366x768; captured menu/guide/game screenshots and confirmed no horizontal overflow, text overflow, key element clipping, or HUD overlap.
+- Fixed iPhone PWA safe-area behavior: keep the background/game container full-screen, offset UI overlays/HUD with safe-area variables, allow menu/guide/summary/pause panes to scroll, and scope touchmove prevention to non-scrollable game space.
+- Verified simulated iPhone notch/Home Indicator safe areas, menu/dialog scrolling, iPhone/iPad/desktop layout fit, and service worker cache update to `rapunzel-magic-world-v40`.
 
 ## TODO
 
