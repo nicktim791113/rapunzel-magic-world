@@ -32,7 +32,15 @@
 
 ---
 
-## 2026-05-25 — pending — PWA safe-area 根治：移到 body 級
+## 2026-05-26 — pending — 修復手機動物 / 字母模式靜音
+
+- 🐛 iOS Safari 在 PWA 切回前台時會把 `AudioContext` 留在 `suspended` 狀態、`speechSynthesis` 留在 `paused`，導致 `playAnimalSound` / `playLetterChime` / `speakEnglishWord` / `speakLetterAndWord` 全部 no-op
+- 🔊 新增 `ensureAudioReady()` 工具：呼叫 `audioCtx.resume()` + `speechSynthesis.resume()`（包 try/catch 避免拋例外）
+- 🔊 在 `handleInteract`、`sliceFruit` 入口都呼叫一次，確保每次點/切前 audio 都是可播狀態
+- 🔊 加 `visibilitychange` / `pageshow` / `focus` 三個全域監聽，PWA 從背景切回時自動喚醒
+- 📦 service-worker `v40 → v41`，強制 PWA 抓新版
+
+## 2026-05-25 — 6d51b56 — PWA safe-area 根治：移到 body 級
 
 - 🐛 之前在個別元素（HUD、overlay、toast）加 `env(safe-area-inset-*)` 還是會有東西貼到瀏海/Home Indicator（特別是 items、scenery、未列出的子元素）。
 - 🐛 改成在 **`<body>`** 直接加四向 `env(safe-area-inset-*)` padding + `box-sizing: border-box`，讓 `#game-container` 縮成 `width:100%/height:100%`（= body 內容區 = safe zone）。所有子元素（HUD、items、塔樓、結算頁、按鈕等）自然全部活在 safe area 之內。

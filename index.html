@@ -2513,6 +2513,25 @@
             primeSpeechSynthesis();
         }
 
+        function ensureAudioReady() {
+            // iOS Safari suspends AudioContext and pauses speechSynthesis whenever
+            // the PWA backgrounds (lockscreen, app switcher, phone call, even a quick
+            // pull-down of Control Centre). They DO NOT auto-resume when the app
+            // comes back — every Web Audio play() and speak() then no-ops silently.
+            // Call this from every user-gesture entry point so playback wakes up
+            // before the next sound fires.
+            try {
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume().catch(() => {});
+                }
+            } catch (e) { /* ignore */ }
+            try {
+                if ('speechSynthesis' in window && window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+            } catch (e) { /* ignore */ }
+        }
+
         function connectSound(node) {
             node.connect(masterGain || audioCtx.destination);
         }
@@ -3875,6 +3894,7 @@
             if (!state.running || state.paused || item._missed) return;
             event.preventDefault();
             event.stopPropagation();
+            ensureAudioReady();
 
             if (state.mode === 'animal') {
                 playAnimalSound(soundType);
@@ -3941,6 +3961,7 @@
         function sliceFruit(item) {
             if (!state.running || state.paused || item._sliced || item._missed) return;
             item._sliced = true;
+            ensureAudioReady();
             if (item._fallAnimation) item._fallAnimation.pause();
 
             const sprite = spriteCellForKey(item._missionKey);
@@ -4196,6 +4217,17 @@
 
         document.addEventListener('pointerdown', syncMusicPlayback, { capture: true, once: true });
         document.addEventListener('keydown', syncMusicPlayback, { once: true });
+
+        // iOS PWA suspends audio + speech whenever the app backgrounds. Resume
+        // them as soon as the user comes back so the next click/swipe actually
+        // makes a sound.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                ensureAudioReady();
+            }
+        });
+        window.addEventListener('pageshow', () => ensureAudioReady());
+        window.addEventListener('focus', () => ensureAudioReady());
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && guideModal.style.display === 'flex') closeGuide();
