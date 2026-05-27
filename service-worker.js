@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapunzel-magic-world-v41';
+const CACHE_NAME = 'rapunzel-magic-world-v42';
 
 const APP_ASSETS = [
   './',
@@ -9,6 +9,27 @@ const APP_ASSETS = [
   './assets/icons/icon-512.png',
   './assets/audio/the-glade-at-dawn.mp3',
   './assets/audio/where-the-sunbeams-hide.mp3',
+  './assets/audio/sfx/balloon-pop.ogg',
+  './assets/audio/sfx/animal-cat.mp3',
+  './assets/audio/sfx/animal-cow.mp3',
+  './assets/audio/sfx/animal-dog.mp3',
+  './assets/audio/sfx/animal-duck.mp3',
+  './assets/audio/sfx/animal-elephant.mp3',
+  './assets/audio/sfx/animal-frog.mp3',
+  './assets/audio/sfx/animal-lion.mp3',
+  './assets/audio/sfx/animal-monkey.mp3',
+  './assets/audio/sfx/animal-pig.mp3',
+  './assets/audio/sfx/animal-sheep.mp3',
+  './assets/audio/sfx/vehicle-ambulance.mp3',
+  './assets/audio/sfx/vehicle-bike.mp3',
+  './assets/audio/sfx/vehicle-bus.mp3',
+  './assets/audio/sfx/vehicle-car.mp3',
+  './assets/audio/sfx/vehicle-firetruck.mp3',
+  './assets/audio/sfx/vehicle-helicopter.mp3',
+  './assets/audio/sfx/vehicle-plane.mp3',
+  './assets/audio/sfx/vehicle-police.mp3',
+  './assets/audio/sfx/vehicle-rocket.mp3',
+  './assets/audio/sfx/vehicle-train.mp3',
   './assets/images/items/animal-cat.png',
   './assets/images/items/animal-cow.png',
   './assets/images/items/animal-dog.png',

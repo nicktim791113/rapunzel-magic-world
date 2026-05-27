@@ -32,7 +32,17 @@
 
 ---
 
-## 2026-05-26 — pending — 修復手機動物 / 字母模式靜音
+## 2026-05-27 — pending — 全面換成真實錄音音效
+
+- 🔊 21 個真實 SFX 取代 Web Audio 合成：1 顆 balloon pop（OpenGameArt CC0）+ 10 個動物叫聲 + 10 個交通工具音效（Pixabay royalty-free）
+- 🔊 新 `SFX_CONFIG` + `sfxBank` + `playSfx(key)` 機制：每 clip 自帶 `max` 秒數，超時自動 fade-out（120ms 6 步），所以 23 秒的羊叫也能變成 1.6 秒乾淨的「咩」
+- 🔊 `playBalloonPop` / `playAnimalSound` / `playVehicleSound` 從原本 100+ 行 Web Audio 合成縮為 1 行 `playSfx()` 呼叫
+- 🔊 `gameData.vehicle.items[].sound` 改為每 emoji 唯一鍵（`bus`/`rocket`/`police`/`firetruck`/`ambulance` 不再共用 `car`/`plane`/`siren`），讓警車 / 消防車 / 救護車能各播自己的警笛
+- 📦 `initAudio()` 多呼叫 `preloadSfxBank()`，第一次點擊前所有 mp3 / ogg 都用 `Audio` 物件預載
+- 📦 新增 `assets/audio/sfx/`：21 個檔案 + `CREDITS.md`（含每個音檔的來源 URL、創作者、授權）
+- 📦 `service-worker.js` v41 → v42，把 21 個 SFX 加進 `APP_ASSETS` 離線快取
+
+## 2026-05-26 — 0fa4c1a — 修復手機動物 / 字母模式靜音
 
 - 🐛 iOS Safari 在 PWA 切回前台時會把 `AudioContext` 留在 `suspended` 狀態、`speechSynthesis` 留在 `paused`，導致 `playAnimalSound` / `playLetterChime` / `speakEnglishWord` / `speakLetterAndWord` 全部 no-op
 - 🔊 新增 `ensureAudioReady()` 工具：呼叫 `audioCtx.resume()` + `speechSynthesis.resume()`（包 try/catch 避免拋例外）
