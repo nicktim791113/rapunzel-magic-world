@@ -2736,48 +2736,50 @@
             'vehicle-firetruck': { file: 'vehicle-firetruck.mp3', max: 1.8, gain: 1.0 },
             'vehicle-ambulance': { file: 'vehicle-ambulance.mp3', max: 1.8, gain: 1.0 }
         };
-        const sfxBank = {};
+        // AudioBuffer cache. Decoded once per session via Web Audio API so playback goes
+        // through audioCtx + masterGain (same gesture context as the synth fallback) and
+        // dodges iOS Safari's `new Audio()` autoplay quirks inside PWAs.
+        const sfxBuffers = {};
+        let sfxLoadStarted = false;
 
         function preloadSfxBank() {
-            if (Object.keys(sfxBank).length) return;
+            // Defer until audioCtx is alive — Web Audio decode needs it. initAudio() always
+            // calls this *after* creating audioCtx and resuming it.
+            if (!audioCtx || sfxLoadStarted) return;
+            sfxLoadStarted = true;
             for (const [key, conf] of Object.entries(SFX_CONFIG)) {
-                const a = new Audio(`assets/audio/sfx/${conf.file}`);
-                a.preload = 'auto';
-                a.volume = 0;
-                sfxBank[key] = a;
+                fetch(`assets/audio/sfx/${conf.file}`)
+                    .then(r => r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}`)))
+                    .then(buf => audioCtx.decodeAudioData(buf))
+                    .then(decoded => { sfxBuffers[key] = decoded; })
+                    .catch(err => console.warn('[sfx] failed to load', key, err));
             }
         }
 
         function playSfx(key) {
-            if (state.muted) return;
+            if (state.muted || !audioCtx) return;
             const conf = SFX_CONFIG[key];
-            const a = sfxBank[key];
-            if (!conf || !a) return;
+            const buffer = sfxBuffers[key];
+            if (!conf || !buffer) return;
             try {
-                // Cancel any previous playback / fade-out timers — supports rapid re-trigger.
-                a.pause();
-                if (a._stopTimer) clearTimeout(a._stopTimer);
-                if (a._fadeTimers) a._fadeTimers.forEach(t => clearTimeout(t));
-                a._fadeTimers = [];
-                a.currentTime = 0;
-                // Source clips are normalised loud, so the effective gain ~ sfxVolume * conf.gain.
-                const target = Math.max(0, Math.min(1, state.sfxVolume * (conf.gain || 1)));
-                a.volume = target;
-                const p = a.play();
-                if (p && typeof p.catch === 'function') p.catch(() => {});
-                // Schedule a short fade-out + pause at conf.max seconds so 20s siren clips
-                // still feel like a 1.5–2s game beep.
-                const fadeMs = 120;
-                const startFadeMs = Math.max(50, conf.max * 1000 - fadeMs);
-                a._stopTimer = setTimeout(() => {
-                    const steps = 6;
-                    for (let i = 1; i <= steps; i++) {
-                        a._fadeTimers.push(setTimeout(() => {
-                            a.volume = target * (1 - i / steps);
-                            if (i === steps) a.pause();
-                        }, (fadeMs / steps) * i));
-                    }
-                }, startFadeMs);
+                const now = audioCtx.currentTime;
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                const gain = audioCtx.createGain();
+                // Clip-specific volume trim. masterGain already applies the sfxVolume slider
+                // and the global mute, so we don't multiply state.sfxVolume here again.
+                const peak = Math.max(0, Math.min(1, conf.gain || 1));
+                gain.gain.setValueAtTime(peak, now);
+                source.connect(gain);
+                connectSound(gain);
+                // Fade-out then stop at conf.max so 20-second siren clips still feel like a
+                // 1.5-2 second game beep.
+                const stopAt = now + conf.max;
+                const fadeAt = Math.max(now + 0.05, stopAt - 0.12);
+                gain.gain.setValueAtTime(peak, fadeAt);
+                gain.gain.linearRampToValueAtTime(0, stopAt);
+                source.start(now);
+                source.stop(stopAt + 0.02);
             } catch (e) { /* silent */ }
         }
 

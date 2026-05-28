@@ -32,7 +32,16 @@
 
 ---
 
-## 2026-05-27 — pending — 拆分音效 / 發音音量 + 暫停畫面可即時調整
+## 2026-05-27 — pending — SFX 播放管線改 Web Audio AudioBuffer
+
+- 🐛 iOS Safari PWA 對 `new Audio() + .play()` 有保留性的 autoplay 限制（即便在 user gesture 內），導致氣球 pop、動物叫聲、車輛音效在手機上常常沉默
+- 🔁 改用 Web Audio API：`fetch` → `decodeAudioData` → `AudioBuffer`，存進 `sfxBuffers[key]`
+- 🔁 `playSfx` 改為 `audioCtx.createBufferSource()` + 連接到既有 masterGain（與合成 SFX 走同一條管線）→ 解決 iOS PWA 不發聲問題，並且 mute / sfxVolume 滑桿自動生效（不再雙重套用音量）
+- 🔁 淡出改成 `gain.linearRampToValueAtTime`（Web Audio 內建），取代原本 6 步 setTimeout 步進
+- 🛠 預載改成在 `initAudio()` 觸發後才開始 fetch+decode（音訊上下文活著時 decode 才合法）
+- 📦 service-worker v43 → v44
+
+## 2026-05-27 — db22966 — 拆分音效 / 發音音量 + 暫停畫面可即時調整
 
 - ✨ 原本「音效 / 英文發音」共用一個 SFX 滑桿，拆成兩個獨立軸：
   - 🔊 **物件音效**：動物叫聲、車輛、爆破等 sfxBank 音效
