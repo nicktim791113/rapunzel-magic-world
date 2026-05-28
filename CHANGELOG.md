@@ -32,7 +32,20 @@
 
 ---
 
-## 2026-05-27 — pending — 全面換成真實錄音音效
+## 2026-05-27 — pending — 拆分音效 / 發音音量 + 暫停畫面可即時調整
+
+- ✨ 原本「音效 / 英文發音」共用一個 SFX 滑桿，拆成兩個獨立軸：
+  - 🔊 **物件音效**：動物叫聲、車輛、爆破等 sfxBank 音效
+  - 🔤 **英文發音**：所有 `speakEnglishWord` / `speakLetterAndWord` 出來的 voice
+- ✨ 新增 `state.voiceVolume`（default 0.85），`speechEffectiveVolume()` 改讀 voiceVolume
+- ✨ profile 自動向下相容：舊存檔沒有 voiceVolume 時，沿用 sfxVolume 當初始值
+- ✨ **暫停畫面新增同款 3 列音量面板**，遊戲中不用退回首頁就能即時微調
+- 🛠 首頁與暫停的滑桿互相同步（`syncVolumeUI()` 一次寫進 6 個 input + 6 個顯示數字）
+- 🛠 「試聽」按鈕分成兩顆：物件音效試聽會連播氣球 pop + 狗叫 + 警笛；發音試聽會說「A — Apple」
+- 📦 audio-panel CSS 從 2 欄改成 `auto-fit minmax(220px, 1fr)`，3 列在窄螢幕上會自動 stack
+- 📦 service-worker v42 → v43
+
+## 2026-05-27 — d9ef1ee — 全面換成真實錄音音效
 
 - 🔊 21 個真實 SFX 取代 Web Audio 合成：1 顆 balloon pop（OpenGameArt CC0）+ 10 個動物叫聲 + 10 個交通工具音效（Pixabay royalty-free）
 - 🔊 新 `SFX_CONFIG` + `sfxBank` + `playSfx(key)` 機制：每 clip 自帶 `max` 秒數，超時自動 fade-out（120ms 6 步），所以 23 秒的羊叫也能變成 1.6 秒乾淨的「咩」

@@ -532,7 +532,8 @@
             width: min(92vw, 860px);
             margin-top: 10px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            /* 3-column on wide screens, stacks down to 1 column on narrow ones. */
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 10px;
         }
 
@@ -1791,11 +1792,18 @@
                     <span class="audio-value" id="music-volume-value">45</span>
                 </div>
                 <div class="audio-row">
-                    <span class="audio-icon" aria-hidden="true">🔤</span>
-                    <span class="audio-label">音效 / 英文發音</span>
-                    <input type="range" id="sfx-volume" min="0" max="100" step="1" value="85" aria-label="音效與英文發音音量">
+                    <span class="audio-icon" aria-hidden="true">🔊</span>
+                    <span class="audio-label">物件音效</span>
+                    <input type="range" id="sfx-volume" min="0" max="100" step="1" value="85" aria-label="物件音效音量（動物叫聲、車輛、爆破）">
                     <span class="audio-value" id="sfx-volume-value">85</span>
-                    <button class="audio-test-btn" id="sfx-test-btn" type="button" aria-label="試聽英文字母 A Apple">試聽</button>
+                    <button class="audio-test-btn" id="sfx-test-btn" type="button" aria-label="試聽物件音效">試聽</button>
+                </div>
+                <div class="audio-row">
+                    <span class="audio-icon" aria-hidden="true">🔤</span>
+                    <span class="audio-label">英文發音</span>
+                    <input type="range" id="voice-volume" min="0" max="100" step="1" value="85" aria-label="英文發音音量">
+                    <span class="audio-value" id="voice-volume-value">85</span>
+                    <button class="audio-test-btn" id="voice-test-btn" type="button" aria-label="試聽英文字母 A Apple">試聽</button>
                 </div>
             </div>
             <div class="menu-panels">
@@ -1863,6 +1871,26 @@
         <div id="pause-overlay">
             <h2>魔法暫停中</h2>
             <p class="subtitle">休息一下，再繼續收集星星。</p>
+            <div class="audio-panel" aria-label="暫停音量設定">
+                <div class="audio-row">
+                    <span class="audio-icon" aria-hidden="true">🎵</span>
+                    <span class="audio-label">背景音樂</span>
+                    <input type="range" id="pause-music-volume" min="0" max="100" step="1" value="45" aria-label="背景音樂音量">
+                    <span class="audio-value" id="pause-music-volume-value">45</span>
+                </div>
+                <div class="audio-row">
+                    <span class="audio-icon" aria-hidden="true">🔊</span>
+                    <span class="audio-label">物件音效</span>
+                    <input type="range" id="pause-sfx-volume" min="0" max="100" step="1" value="85" aria-label="物件音效音量">
+                    <span class="audio-value" id="pause-sfx-volume-value">85</span>
+                </div>
+                <div class="audio-row">
+                    <span class="audio-icon" aria-hidden="true">🔤</span>
+                    <span class="audio-label">英文發音</span>
+                    <input type="range" id="pause-voice-volume" min="0" max="100" step="1" value="85" aria-label="英文發音音量">
+                    <span class="audio-value" id="pause-voice-volume-value">85</span>
+                </div>
+            </div>
             <div class="summary-actions">
                 <button class="primary-btn" id="resume-btn">繼續</button>
                 <button class="primary-btn" id="pause-restart-btn">重玩</button>
@@ -2261,6 +2289,7 @@
             muted: false,
             musicEnabled: true,
             sfxVolume: 0.85,
+            voiceVolume: 0.85,
             musicVolume: 0.45,
             difficulty: 'normal',
             ageMode: 'toddler',
@@ -2397,7 +2426,7 @@
                 medals: {},
                 inventory: { slow: 0, magnet: 0, crown: 0 },
                 leaderboard: [],
-                audio: { sfxVolume: 0.85, musicVolume: 0.45, muted: false, musicEnabled: true }
+                audio: { sfxVolume: 0.85, voiceVolume: 0.85, musicVolume: 0.45, muted: false, musicEnabled: true }
             };
             try {
                 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -2421,6 +2450,7 @@
         function saveAudioPrefs() {
             profile.audio = {
                 sfxVolume: state.sfxVolume,
+                voiceVolume: state.voiceVolume,
                 musicVolume: state.musicVolume,
                 muted: state.muted,
                 musicEnabled: state.musicEnabled
@@ -2601,8 +2631,10 @@
         }
 
         function speechEffectiveVolume(extra = 1) {
+            // Voice (English pronunciation) is independent of the SFX slider so parents
+            // can keep the educational voice loud while turning the play sounds down.
             if (state.muted) return 0;
-            const v = Math.max(0, Math.min(1, state.sfxVolume * 1.25 * extra));
+            const v = Math.max(0, Math.min(1, state.voiceVolume * 1.25 * extra));
             return v;
         }
 
@@ -3983,50 +4015,108 @@
         // Restore saved audio preferences before wiring up sliders
         if (profile.audio) {
             if (typeof profile.audio.sfxVolume === 'number') state.sfxVolume = profile.audio.sfxVolume;
+            if (typeof profile.audio.voiceVolume === 'number') state.voiceVolume = profile.audio.voiceVolume;
+            else if (typeof profile.audio.sfxVolume === 'number') state.voiceVolume = profile.audio.sfxVolume; // migration: pre-split saves
             if (typeof profile.audio.musicVolume === 'number') state.musicVolume = profile.audio.musicVolume;
             if (typeof profile.audio.muted === 'boolean') state.muted = profile.audio.muted;
             if (typeof profile.audio.musicEnabled === 'boolean') state.musicEnabled = profile.audio.musicEnabled;
             muteBtn.innerText = state.muted ? '🔇' : '🔊';
         }
 
+        // Pair each volume slider on the home menu with its twin inside the pause overlay,
+        // so adjustments on either side stay in sync via syncVolumeUI().
         const musicVolumeInput = document.getElementById('music-volume');
         const musicVolumeValue = document.getElementById('music-volume-value');
         const sfxVolumeInput = document.getElementById('sfx-volume');
         const sfxVolumeValue = document.getElementById('sfx-volume-value');
         const sfxTestBtn = document.getElementById('sfx-test-btn');
+        const voiceVolumeInput = document.getElementById('voice-volume');
+        const voiceVolumeValue = document.getElementById('voice-volume-value');
+        const voiceTestBtn = document.getElementById('voice-test-btn');
+        const pauseMusicVolumeInput = document.getElementById('pause-music-volume');
+        const pauseMusicVolumeValue = document.getElementById('pause-music-volume-value');
+        const pauseSfxVolumeInput = document.getElementById('pause-sfx-volume');
+        const pauseSfxVolumeValue = document.getElementById('pause-sfx-volume-value');
+        const pauseVoiceVolumeInput = document.getElementById('pause-voice-volume');
+        const pauseVoiceVolumeValue = document.getElementById('pause-voice-volume-value');
 
         function syncVolumeUI() {
             const m = Math.round(state.musicVolume * 100);
             const s = Math.round(state.sfxVolume * 100);
+            const v = Math.round(state.voiceVolume * 100);
             musicVolumeInput.value = String(m);
             musicVolumeValue.innerText = String(m);
             sfxVolumeInput.value = String(s);
             sfxVolumeValue.innerText = String(s);
+            voiceVolumeInput.value = String(v);
+            voiceVolumeValue.innerText = String(v);
+            pauseMusicVolumeInput.value = String(m);
+            pauseMusicVolumeValue.innerText = String(m);
+            pauseSfxVolumeInput.value = String(s);
+            pauseSfxVolumeValue.innerText = String(s);
+            pauseVoiceVolumeInput.value = String(v);
+            pauseVoiceVolumeValue.innerText = String(v);
         }
 
         syncVolumeUI();
 
-        musicVolumeInput.addEventListener('input', (event) => {
+        function handleMusicVolumeInput(event) {
             state.musicVolume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
-            musicVolumeValue.innerText = String(Math.round(state.musicVolume * 100));
+            syncVolumeUI();
             updateMusicVolumes();
-        });
-        musicVolumeInput.addEventListener('change', saveAudioPrefs);
-
-        sfxVolumeInput.addEventListener('input', (event) => {
+        }
+        function handleSfxVolumeInput(event) {
             state.sfxVolume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
-            sfxVolumeValue.innerText = String(Math.round(state.sfxVolume * 100));
+            syncVolumeUI();
             updateMasterVolume();
-        });
+        }
+        function handleVoiceVolumeInput(event) {
+            state.voiceVolume = Math.max(0, Math.min(1, Number(event.target.value) / 100));
+            syncVolumeUI();
+        }
+
+        musicVolumeInput.addEventListener('input', handleMusicVolumeInput);
+        musicVolumeInput.addEventListener('change', saveAudioPrefs);
+        pauseMusicVolumeInput.addEventListener('input', handleMusicVolumeInput);
+        pauseMusicVolumeInput.addEventListener('change', saveAudioPrefs);
+
+        sfxVolumeInput.addEventListener('input', handleSfxVolumeInput);
         sfxVolumeInput.addEventListener('change', () => {
             saveAudioPrefs();
-            // Play a short demo so user hears the new SFX level immediately
             initAudio();
-            playLetterChime('A');
+            playSfx('balloon-pop');
+        });
+        pauseSfxVolumeInput.addEventListener('input', handleSfxVolumeInput);
+        pauseSfxVolumeInput.addEventListener('change', () => {
+            saveAudioPrefs();
+            initAudio();
+            playSfx('balloon-pop');
+        });
+
+        voiceVolumeInput.addEventListener('input', handleVoiceVolumeInput);
+        voiceVolumeInput.addEventListener('change', () => {
+            saveAudioPrefs();
+            initAudio();
+            speakLetterAndWord('A', 'Apple');
+        });
+        pauseVoiceVolumeInput.addEventListener('input', handleVoiceVolumeInput);
+        pauseVoiceVolumeInput.addEventListener('change', () => {
+            saveAudioPrefs();
+            initAudio();
             speakLetterAndWord('A', 'Apple');
         });
 
         sfxTestBtn.addEventListener('pointerdown', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            initAudio();
+            // Cycle through a few SFX so the level slider preview covers different clips.
+            playSfx('balloon-pop');
+            setTimeout(() => playSfx('animal-dog'), 350);
+            setTimeout(() => playSfx('vehicle-police'), 1100);
+        });
+
+        voiceTestBtn.addEventListener('pointerdown', (event) => {
             event.preventDefault();
             event.stopPropagation();
             initAudio();
