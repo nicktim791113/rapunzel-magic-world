@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapunzel-magic-world-v46';
+const CACHE_NAME = 'rapunzel-magic-world-v47';
 
 const APP_ASSETS = [
   './',
@@ -111,8 +111,14 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // Range requests (audio/video streaming) MUST be left to the browser. A service
+  // worker that answers a Range request via respondWith() — even with a correctly
+  // synthesized 206 — breaks the <audio> byte-range state machine in Chrome and
+  // Safari, so the element stalls at readyState 0 and never plays a sound. Returning
+  // here (no respondWith) lets the request go straight to the network natively.
+  // This is why background music + the ABC tune were silent.
   if (request.headers.has('range')) {
-    event.respondWith(handleRangeRequest(request));
     return;
   }
 
@@ -139,33 +145,3 @@ self.addEventListener('fetch', (event) => {
       }))
   );
 });
-
-async function handleRangeRequest(request) {
-  const cached = await caches.match(request.url);
-  if (!cached) return fetch(request);
-
-  const range = request.headers.get('range') || '';
-  const bytesPrefix = 'bytes=';
-  if (!range.startsWith(bytesPrefix)) return cached;
-
-  const buffer = await cached.arrayBuffer();
-  const [startText, endText] = range.slice(bytesPrefix.length).split('-');
-  const start = Number(startText);
-  const end = endText ? Number(endText) : buffer.byteLength - 1;
-
-  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) {
-    return new Response(null, { status: 416, statusText: 'Range Not Satisfiable' });
-  }
-
-  const chunk = buffer.slice(start, end + 1);
-  return new Response(chunk, {
-    status: 206,
-    statusText: 'Partial Content',
-    headers: {
-      'Accept-Ranges': 'bytes',
-      'Content-Length': String(chunk.byteLength),
-      'Content-Range': `bytes ${start}-${end}/${buffer.byteLength}`,
-      'Content-Type': cached.headers.get('Content-Type') || 'application/octet-stream'
-    }
-  });
-}

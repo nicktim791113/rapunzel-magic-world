@@ -32,7 +32,15 @@
 
 ---
 
-## 2026-05-30 — pending — 修復背景音樂全失聲
+## 2026-05-30 — pending — 真正修好背景音樂：SW 不再攔截 range 請求
+
+- 🐛 **根因（實測找到）**：service worker 的 `handleRangeRequest` 用 `respondWith` 回傳合成的 206 給 `<audio>` 的 range 請求。`fetch()` 能正常讀取，但 Chrome/Safari 的媒體 byte-range 狀態機無法消化 SW 合成的 Response → 元素卡在 `readyState 0`（`loadstart → stalled`）→ **所有背景音樂無聲**（PC、手機皆然）
+- 🔬 用 Chrome 實際載入 GitHub Pages 驗證：`fetch` 拿得到 206/完整檔，但遊戲的 `<audio>` 與全新 `new Audio()` 都 stall → 確認是 SW 攔截 media range 的鍋
+- 🔁 SW fetch handler 對帶 `Range` 標頭的請求直接 `return`（不 `respondWith`），交給瀏覽器原生處理；移除整個 `handleRangeRequest`
+- 🛠 SFX（用 `fetch`+decodeAudioData、無 range 標頭）仍走 cache-first，離線快取不受影響；只有串流的背景音樂改走原生網路
+- 📦 service-worker v46 → v47
+
+## 2026-05-30 — c8ce864 — 修復背景音樂全失聲
 
 - 🐛 上一版用「重設 `bgMusic.src`」切換 ABC 音樂，但 iOS/Safari 一旦重設 `<audio>` 的 src 就會弄丟 user-gesture unlock → 切過一次後**所有背景音樂（含原本的）都不再播放**
 - 🔁 改成 **雙 `<audio>` 元素**：`bgMusic`（一般模式）+ `abcMusic`（ABC 模式），各自保留 baked-in src 與 unlock，只 play/pause 不重設 src
