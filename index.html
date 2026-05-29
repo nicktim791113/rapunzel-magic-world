@@ -4204,21 +4204,22 @@
         // Prime audio + speech on the very first user gesture (required for iOS/Safari)
         const firstGestureInit = () => {
             initAudio();
-            // Unlock the two gameplay tracks while we're inside a user gesture by doing a
-            // muted play→pause. Without this, switching to the ABC track during an
-            // adventure level change (which fires from a setTimeout, not a gesture) would
-            // be blocked by Safari's autoplay policy and stay silent. menuMusic is left
-            // alone — startMenuMusic() unlocks it in the same gesture via syncMusicPlayback.
+            // Unlock the two gameplay tracks while inside this gesture so the ABC track
+            // can also start later from an adventure level change (a setTimeout, not a
+            // gesture). CRITICAL: pause SYNCHRONOUSLY right after play() — do NOT defer the
+            // pause to the play() promise's .then(). A deferred pause resolves a moment
+            // later, AFTER startBackgroundMusic() (run by the same click's button handler)
+            // has started the real track, and would immediately pause it again — that race
+            // is what silenced ALL background music. The synchronous pause finishes before
+            // the button handler runs, so it unlocks without clobbering real playback.
             [bgMusic, abcMusic].forEach((el) => {
                 try {
                     el.muted = true;
                     const p = el.play();
-                    if (p && typeof p.then === 'function') {
-                        p.then(() => { el.pause(); el.currentTime = 0; el.muted = false; })
-                         .catch(() => { el.muted = false; });
-                    } else {
-                        el.pause(); el.muted = false;
-                    }
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                    el.pause();
+                    el.currentTime = 0;
+                    el.muted = false;
                 } catch (e) { el.muted = false; }
             });
         };

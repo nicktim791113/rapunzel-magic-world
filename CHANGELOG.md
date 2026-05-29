@@ -32,7 +32,14 @@
 
 ---
 
-## 2026-05-30 — pending — 真正修好背景音樂：SW 不再攔截 range 請求
+## 2026-05-30 — pending — 真正的根因：預解鎖 race 把音樂停掉
+
+- 🐛 **真正的 root cause**：c8ce864 加的「首次手勢 muted 預解鎖」用 `play().then(() => pause())` 延遲暫停。capture-phase 的 firstGestureInit 先跑、排入 microtask；接著按鈕 handler 的 `startBackgroundMusic()` 開始播音樂；然後那個延遲的 `.then(pause)` 才觸發 → **把剛開始的音樂立刻暫停** → 全模式背景音樂無聲（PC + 手機）
+- 🔁 預解鎖改成 **同步 play→pause**（在 firstGestureInit 內就跑完，早於同一次點擊的按鈕 handler），解鎖但不再 clobber 真正的播放
+- 🔬 同時查明：這個自動化瀏覽器環境連 data: URI 靜音 WAV 都無法載入（media 被抑制），所以音訊只能靠程式邏輯推理 + 真機驗證，無法在工具內聽到
+- 📦 service-worker v47 → v48（沿用 v47 的「SW 不攔截 range」改動，那本身是正確做法）
+
+## 2026-05-30 — 1a32923 — SW 不再攔截 range 請求（仍保留）
 
 - 🐛 **根因（實測找到）**：service worker 的 `handleRangeRequest` 用 `respondWith` 回傳合成的 206 給 `<audio>` 的 range 請求。`fetch()` 能正常讀取，但 Chrome/Safari 的媒體 byte-range 狀態機無法消化 SW 合成的 Response → 元素卡在 `readyState 0`（`loadstart → stalled`）→ **所有背景音樂無聲**（PC、手機皆然）
 - 🔬 用 Chrome 實際載入 GitHub Pages 驗證：`fetch` 拿得到 206/完整檔，但遊戲的 `<audio>` 與全新 `new Audio()` 都 stall → 確認是 SW 攔截 media range 的鍋
