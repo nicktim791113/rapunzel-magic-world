@@ -32,7 +32,17 @@
 
 ---
 
-## 2026-05-27 — pending — SFX 播放管線改 Web Audio AudioBuffer
+## 2026-05-30 — pending — ABC 模式：3D 搖動字母 + 專屬童謠
+
+- 🎨 字母從蒼白小卡改成 **彩虹 3D 擠出字**：每個字母依 A–Z 取不同色相（face 亮色 + edge 暗色 5 層 text-shadow 擠出立體感），加白色描邊
+- 🎨 字母會 **搖動**（`letterWobble` 旋轉 ±8° + 縮放呼吸），每字母 stagger 不同步，避免整片同步搖
+- 🎨 字母放大（fontSize 0.52→0.62em）、點擊框配合放大；word 標籤改成白底圓角藥丸
+- 🔊 ABC 模式專屬背景音樂：Pixabay CC-free「ABC Song (Music Box)」音樂盒版，純樂器避免跟英文發音打架
+- 🔊 `applyBgMusicForMode()`：alphabet 模式自動切 `abc-song.mp3`，其他模式用原本的 `where-the-sunbeams-hide.mp3`；只在曲目改變時才換 src（不重啟循環）；冒險模式跨關也會切換
+- 📦 新增 `assets/audio/abc-song.mp3` + `assets/audio/CREDITS.md`（背景音樂授權）
+- 📦 service-worker v44 → v45
+
+## 2026-05-27 — 5227f3d — SFX 播放管線改 Web Audio AudioBuffer
 
 - 🐛 iOS Safari PWA 對 `new Audio() + .play()` 有保留性的 autoplay 限制（即便在 user gesture 內），導致氣球 pop、動物叫聲、車輛音效在手機上常常沉默
 - 🔁 改用 Web Audio API：`fetch` → `decodeAudioData` → `AudioBuffer`，存進 `sfxBuffers[key]`

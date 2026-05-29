@@ -1205,36 +1205,55 @@
 
         .letter-style {
             flex-direction: column;
-            gap: 1px;
-            border-radius: 22px;
-            border: 3px solid rgba(123, 44, 191, 0.3);
-            background:
-                radial-gradient(circle at 22% 20%, rgba(255,255,255,0.94) 0 16%, transparent 17%),
-                linear-gradient(145deg, #FFFFFF 0%, #FFF4B8 58%, #FFD6E9 100%);
-            box-shadow: 0 12px 18px rgba(65, 43, 85, 0.16), inset 0 -6px 0 rgba(123, 44, 191, 0.08);
-            color: var(--purple);
+            gap: 4px;
+            background: transparent !important;
+            border: none;
+            box-shadow: none;
+            overflow: visible;
             text-align: center;
-            font-family: "Segoe UI", Arial, sans-serif;
+            font-family: "Arial Rounded MT Bold", "Segoe UI", system-ui, sans-serif;
             font-weight: 900;
             line-height: 1;
         }
 
+        /* Big chunky 3D extruded toy letter. --letter-face / --letter-edge are set
+           per-letter in applyLetterItem so A–Z look like a rainbow set of toy blocks. */
         .letter-symbol {
             display: block;
-            line-height: 0.92;
-            text-shadow: 2px 2px 0 rgba(255,255,255,0.78);
+            line-height: 0.9;
+            color: var(--letter-face, #FFD93D);
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.6);
+            text-shadow:
+                1px 1px 0 var(--letter-edge, #B8860B),
+                2px 2px 0 var(--letter-edge, #B8860B),
+                3px 3px 0 var(--letter-edge, #B8860B),
+                4px 4px 0 var(--letter-edge, #B8860B),
+                5px 5px 0 var(--letter-edge, #B8860B),
+                6px 8px 7px rgba(40, 20, 60, 0.4);
+            transform-origin: 50% 78%;
+            animation: letterWobble 1.5s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes letterWobble {
+            0%   { transform: rotate(-8deg) scale(0.97); }
+            50%  { transform: rotate(8deg)  scale(1.06); }
+            100% { transform: rotate(-8deg) scale(0.97); }
         }
 
         .letter-word {
-            display: block;
-            max-width: calc(100% - 8px);
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: inline-block;
+            max-width: 150%;
+            padding: 2px 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.94);
             color: var(--pink);
-            font-size: 0.31em;
-            line-height: 1.05;
+            font-size: 0.30em;
+            line-height: 1.1;
+            font-weight: 800;
             white-space: nowrap;
             text-transform: lowercase;
+            box-shadow: 0 2px 5px rgba(60, 40, 80, 0.22);
         }
 
         .mission-target-letter {
@@ -2380,6 +2399,19 @@
         const container = document.getElementById('game-container');
         const menuMusic = document.getElementById('menu-music');
         const bgMusic = document.getElementById('bg-music');
+        // Per-mode background music. Alphabet mode gets a recognisable instrumental ABC
+        // (music-box) tune; every other mode keeps the original ambient track.
+        const BG_MUSIC_DEFAULT = 'assets/audio/where-the-sunbeams-hide.mp3';
+        const BG_MUSIC_ALPHABET = 'assets/audio/abc-song.mp3';
+
+        function applyBgMusicForMode() {
+            const wanted = state.mode === 'alphabet' ? BG_MUSIC_ALPHABET : BG_MUSIC_DEFAULT;
+            // bgMusic.src is resolved to an absolute URL; only swap (which resets playback)
+            // when the desired track actually changes, so same-mode replays don't restart.
+            if (!bgMusic.src.endsWith(wanted)) {
+                bgMusic.src = wanted;
+            }
+        }
         const menuScreen = document.getElementById('menu-screen');
         const hud = document.getElementById('hud');
         const pauseOverlay = document.getElementById('pause-overlay');
@@ -2598,6 +2630,7 @@
         function startBackgroundMusic() {
             if (!state.musicEnabled || !state.running || state.paused) return;
             stopMenuMusic();
+            applyBgMusicForMode();
             updateMusicVolumes();
             bgMusic.play().catch(() => {});
         }
@@ -3162,8 +3195,16 @@
             word.className = 'letter-word';
             letter.innerText = choice.letter;
             word.innerText = choice.word;
+            // Give each letter its own bright hue + matching darker extrusion edge so
+            // A–Z read like a rainbow set of glossy 3D toy blocks.
+            const idx = Math.max(0, choice.letter.toUpperCase().charCodeAt(0) - 65);
+            const hue = Math.round((idx * 360) / 26);
+            letter.style.setProperty('--letter-face', `hsl(${hue}, 90%, 60%)`);
+            letter.style.setProperty('--letter-edge', `hsl(${hue}, 75%, 33%)`);
+            // Stagger the wobble so a screenful of letters doesn't sway in lockstep.
+            letter.style.animationDelay = `${(idx % 6) * 0.12}s`;
             item.classList.add('letter-style');
-            item.style.fontSize = `${size * 0.52}px`;
+            item.style.fontSize = `${size * 0.62}px`;
             item.dataset.label = `${choice.letter} ${choice.word}`;
             item.dataset.word = choice.word;
             item.append(letter, word);
@@ -3300,6 +3341,10 @@
             state.spawnMs = spawnDelayForLevel(state.level);
             updateSceneTheme(level.mode);
             updateStats();
+            // Swap to / from the ABC tune as adventure levels change mode.
+            if (state.musicEnabled && state.running && !state.paused) {
+                startBackgroundMusic();
+            }
             showToast(encourageToast, `第 ${state.level} 關：${level.title}`);
         }
 
@@ -3568,11 +3613,11 @@
 
             const size = 68 + Math.random() * 38;
             const itemWidth = state.mode === 'vehicle' ? size * 1.34
-                : state.mode === 'alphabet' ? size * 1.14
+                : state.mode === 'alphabet' ? size * 1.25
                 : state.mode === 'balloon' ? size * 0.92
                 : size;
             const itemHeight = state.mode === 'vehicle' ? size * 0.96
-                : state.mode === 'alphabet' ? size * 1.04
+                : state.mode === 'alphabet' ? size * 1.2
                 : state.mode === 'balloon' ? size * 1.20
                 : size;
             item.style.width = `${itemWidth}px`;
