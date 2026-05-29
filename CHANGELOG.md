@@ -32,7 +32,15 @@
 
 ---
 
-## 2026-05-30 — pending — ABC 模式：3D 搖動字母 + 專屬童謠
+## 2026-05-30 — pending — 修復背景音樂全失聲
+
+- 🐛 上一版用「重設 `bgMusic.src`」切換 ABC 音樂，但 iOS/Safari 一旦重設 `<audio>` 的 src 就會弄丟 user-gesture unlock → 切過一次後**所有背景音樂（含原本的）都不再播放**
+- 🔁 改成 **雙 `<audio>` 元素**：`bgMusic`（一般模式）+ `abcMusic`（ABC 模式），各自保留 baked-in src 與 unlock，只 play/pause 不重設 src
+- 🔁 `gameplayMusicEl()` 依模式回傳正確元素；`startBackgroundMusic` 播放該元素並暫停另一個；`stopBackgroundMusic` / `updateMusicVolumes` 同時涵蓋兩者
+- 🛠 首次手勢時對 `bgMusic` + `abcMusic` 做 muted play→pause **預解鎖**，確保冒險模式在 setTimeout（非手勢）切到 ABC 音樂也能播
+- 📦 service-worker v45 → v46
+
+## 2026-05-30 — 2e1b38d — ABC 模式：3D 搖動字母 + 專屬童謠
 
 - 🎨 字母從蒼白小卡改成 **彩虹 3D 擠出字**：每個字母依 A–Z 取不同色相（face 亮色 + edge 暗色 5 層 text-shadow 擠出立體感），加白色描邊
 - 🎨 字母會 **搖動**（`letterWobble` 旋轉 ±8° + 縮放呼吸），每字母 stagger 不同步，避免整片同步搖

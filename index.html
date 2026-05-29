@@ -1734,6 +1734,7 @@
     <div id="game-container">
         <audio id="menu-music" src="assets/audio/the-glade-at-dawn.mp3" loop preload="auto" playsinline></audio>
         <audio id="bg-music" src="assets/audio/where-the-sunbeams-hide.mp3" loop preload="auto" playsinline></audio>
+        <audio id="abc-music" src="assets/audio/abc-song.mp3" loop preload="auto" playsinline></audio>
         <div class="scene-sun" aria-hidden="true"></div>
         <div class="scene-cloud cloud-a" aria-hidden="true"></div>
         <div class="scene-cloud cloud-b" aria-hidden="true"></div>
@@ -2399,18 +2400,15 @@
         const container = document.getElementById('game-container');
         const menuMusic = document.getElementById('menu-music');
         const bgMusic = document.getElementById('bg-music');
-        // Per-mode background music. Alphabet mode gets a recognisable instrumental ABC
-        // (music-box) tune; every other mode keeps the original ambient track.
-        const BG_MUSIC_DEFAULT = 'assets/audio/where-the-sunbeams-hide.mp3';
-        const BG_MUSIC_ALPHABET = 'assets/audio/abc-song.mp3';
+        const abcMusic = document.getElementById('abc-music');
 
-        function applyBgMusicForMode() {
-            const wanted = state.mode === 'alphabet' ? BG_MUSIC_ALPHABET : BG_MUSIC_DEFAULT;
-            // bgMusic.src is resolved to an absolute URL; only swap (which resets playback)
-            // when the desired track actually changes, so same-mode replays don't restart.
-            if (!bgMusic.src.endsWith(wanted)) {
-                bgMusic.src = wanted;
-            }
+        // Per-mode background music uses SEPARATE <audio> elements rather than swapping
+        // one element's src. Reassigning .src on iOS/Safari drops the element's
+        // user-gesture "unlock", which silenced playback after the first switch.
+        // Each element keeps its own baked-in src + unlock, so we just play the right
+        // one and pause the other.
+        function gameplayMusicEl() {
+            return state.mode === 'alphabet' ? abcMusic : bgMusic;
         }
         const menuScreen = document.getElementById('menu-screen');
         const hud = document.getElementById('hud');
@@ -2603,6 +2601,7 @@
             const vol = effectiveMusicGain();
             menuMusic.volume = vol;
             bgMusic.volume = vol;
+            abcMusic.volume = vol;
         }
 
         function updateMasterVolume() {
@@ -2619,6 +2618,7 @@
             if (!state.musicEnabled || !isMenuVisible()) return;
             updateMusicVolumes();
             bgMusic.pause();
+            abcMusic.pause();
             menuMusic.play().catch(() => {});
         }
 
@@ -2630,13 +2630,17 @@
         function startBackgroundMusic() {
             if (!state.musicEnabled || !state.running || state.paused) return;
             stopMenuMusic();
-            applyBgMusicForMode();
             updateMusicVolumes();
-            bgMusic.play().catch(() => {});
+            // Play the track for the current mode; pause the other gameplay track.
+            const wanted = gameplayMusicEl();
+            const other = wanted === bgMusic ? abcMusic : bgMusic;
+            other.pause();
+            wanted.play().catch(() => {});
         }
 
         function stopBackgroundMusic() {
             bgMusic.pause();
+            abcMusic.pause();
         }
 
         function syncMusicPlayback() {
@@ -4200,6 +4204,23 @@
         // Prime audio + speech on the very first user gesture (required for iOS/Safari)
         const firstGestureInit = () => {
             initAudio();
+            // Unlock the two gameplay tracks while we're inside a user gesture by doing a
+            // muted play→pause. Without this, switching to the ABC track during an
+            // adventure level change (which fires from a setTimeout, not a gesture) would
+            // be blocked by Safari's autoplay policy and stay silent. menuMusic is left
+            // alone — startMenuMusic() unlocks it in the same gesture via syncMusicPlayback.
+            [bgMusic, abcMusic].forEach((el) => {
+                try {
+                    el.muted = true;
+                    const p = el.play();
+                    if (p && typeof p.then === 'function') {
+                        p.then(() => { el.pause(); el.currentTime = 0; el.muted = false; })
+                         .catch(() => { el.muted = false; });
+                    } else {
+                        el.pause(); el.muted = false;
+                    }
+                } catch (e) { el.muted = false; }
+            });
         };
         document.addEventListener('pointerdown', firstGestureInit, { capture: true, once: true });
         document.addEventListener('keydown', firstGestureInit, { once: true });
