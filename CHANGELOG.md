@@ -32,7 +32,18 @@
 
 ---
 
-## 2026-05-30 — pending — 真正的根因：預解鎖 race 把音樂停掉
+## 2026-05-31 — pending — 五個模式換上童話魔法繪本背景
+
+- 🎨 用 ChatGPT 畫了 5 張全螢幕直式繪本背景（原創童話魔法場景，無人物、無迪士尼元素），取代原本粗糙的 CSS 漸層：
+  - 氣球＝晨曦天空＋天燈、水果＝金色魔法果園、動物園＝森林精靈空地、車車＝童話小鎮道路＋天空、ABC＝星空魔法書房
+  - 每張都含魔法塔＋漂浮天燈的統一視覺語言，中央留白確保遊戲物件清楚
+- 🎨 `#game-container.theme-<mode>` 用 `background: url(...) center/cover` 套用（id 限定壓過容器底色）
+- 🎨 遊戲中（有 theme class 時）隱藏舊的 CSS 場景（塔、天燈、太陽、雲、柵欄、scene-prop、`::before/::after`）；首頁選單無 theme class 仍保留原本 CSS 場景
+- 🛠 圖片轉成最佳化 progressive JPEG（q82），5 張共 ~1 MB（原始 PNG 共 11.6 MB）
+- 🔬 本機實測：水果模式背景正確鋪滿、果樹/天燈/魔法塔到位、水果 sprite 在中央清楚可辨
+- 📦 新增 `assets/images/backgrounds/`（5 jpg + CREDITS.md）；service-worker v48 → v49，背景加入離線快取
+
+## 2026-05-30 — 3556f03 — 真正的根因：預解鎖 race 把音樂停掉
 
 - 🐛 **真正的 root cause**：c8ce864 加的「首次手勢 muted 預解鎖」用 `play().then(() => pause())` 延遲暫停。capture-phase 的 firstGestureInit 先跑、排入 microtask；接著按鈕 handler 的 `startBackgroundMusic()` 開始播音樂；然後那個延遲的 `.then(pause)` 才觸發 → **把剛開始的音樂立刻暫停** → 全模式背景音樂無聲（PC + 手機）
 - 🔁 預解鎖改成 **同步 play→pause**（在 firstGestureInit 內就跑完，早於同一次點擊的按鈕 handler），解鎖但不再 clobber 真正的播放

@@ -832,35 +832,31 @@
             font-weight: 900;
         }
 
-        .theme-fruit {
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.36) 0 18%, transparent 38%),
-                linear-gradient(180deg, #BDEBFF 0%, #FFE3A6 64%, #B7E06B 64%, #58B85F 100%);
-        }
+        /* Painted storybook backgrounds per mode (ChatGPT-generated, original
+           fairy-tale magic scenery). ID-qualified so they outrank #game-container's
+           own background. cover keeps them full-bleed on every aspect ratio. */
+        #game-container.theme-balloon  { background: url('assets/images/backgrounds/bg-balloon.jpg')  center / cover no-repeat; }
+        #game-container.theme-fruit    { background: url('assets/images/backgrounds/bg-fruit.jpg')    center / cover no-repeat; }
+        #game-container.theme-animal   { background: url('assets/images/backgrounds/bg-animal.jpg')   center / cover no-repeat; }
+        #game-container.theme-vehicle  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
+        #game-container.theme-alphabet { background: url('assets/images/backgrounds/bg-alphabet.jpg') center / cover no-repeat; }
 
-        .theme-animal {
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.28) 0 20%, transparent 42%),
-                linear-gradient(180deg, #B7ECFF 0%, #FBE4A6 62%, #C8DE78 62%, #6ABA6A 100%);
+        /* During gameplay (a theme class is present) the painted illustration already
+           contains its own tower / lanterns / scenery, so hide the old CSS scenery.
+           The home menu has no theme class, so it keeps the CSS tower + lanterns. */
+        #game-container[class*="theme-"]::before,
+        #game-container[class*="theme-"]::after {
+            display: none !important;
         }
-
-        .theme-vehicle {
-            background:
-                linear-gradient(180deg, #9CD9FF 0%, #FFE6A8 60%, #7CC66E 60%, #459252 100%);
-        }
-
-        .theme-balloon {
-            background:
-                radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.75) 0 22px, transparent 23px),
-                radial-gradient(circle at 72% 28%, rgba(255, 255, 255, 0.66) 0 30px, transparent 31px),
-                linear-gradient(180deg, #9DE6FF 0%, #FFE7A8 73%, #95D875 73%, #49A752 100%);
-        }
-
-        .theme-alphabet {
-            background:
-                radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.72) 0 24px, transparent 25px),
-                radial-gradient(circle at 78% 24%, rgba(255, 248, 181, 0.7) 0 32px, transparent 33px),
-                linear-gradient(180deg, #A8E6FF 0%, #FFF1BA 68%, #A9DC72 68%, #52AA5E 100%);
+        #game-container[class*="theme-"] .tower-roof,
+        #game-container[class*="theme-"] .lantern,
+        #game-container[class*="theme-"] .scene-sun,
+        #game-container[class*="theme-"] .scene-cloud,
+        #game-container[class*="theme-"] .scene-hills,
+        #game-container[class*="theme-"] .scene-fence,
+        #game-container[class*="theme-"] .scene-sign,
+        #game-container[class*="theme-"] .scene-prop {
+            display: none !important;
         }
 
         .scene-prop {
@@ -868,14 +864,6 @@
             display: none;
             pointer-events: none;
             z-index: 1;
-        }
-
-        .theme-fruit .fruit-tree,
-        .theme-animal .zoo-prop,
-        .theme-vehicle .road-prop,
-        .theme-vehicle .scene-sign,
-        .theme-alphabet .scene-sign {
-            display: block;
         }
 
         .theme-alphabet .scene-sign::after {
