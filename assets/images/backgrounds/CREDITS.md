@@ -10,6 +10,7 @@ dedicated wide versions.
 | File | Mode | Scene |
 |---|---|---|
 | `bg-balloon.jpg` / `-wide.jpg`  | 氣球 balloon   | Dawn sky, floating lanterns, distant magic tower, flower hills |
+| `bg-lantern.jpg` / `-wide.jpg`  | 天燈 lantern   | Night sky-lantern festival: starry dusk, many glowing lanterns, lake reflection, glowing tower |
 | `bg-fruit.jpg` / `-wide.jpg`    | 水果 fruit     | Golden-hour magic orchard, glowing fruit trees, flower meadow |
 | `bg-animal.jpg` / `-wide.jpg`   | 動物園 animal  | Enchanted forest glade, fence + lily pond, sunbeams |
 | `bg-vehicle.jpg` / `-wide.jpg`  | 車車 vehicle   | Whimsical town: cobblestone road (lower third) + open sky |

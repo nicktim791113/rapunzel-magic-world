@@ -839,6 +839,7 @@
            below swaps to WIDE art (1536x1024) so desktop/tablet don't get the
            portrait image cropped down to a thin center band. */
         #game-container.theme-balloon  { background: url('assets/images/backgrounds/bg-balloon.jpg')  center / cover no-repeat; }
+        #game-container.theme-lantern  { background: url('assets/images/backgrounds/bg-lantern.jpg')  center / cover no-repeat; }
         #game-container.theme-fruit    { background: url('assets/images/backgrounds/bg-fruit.jpg')    center / cover no-repeat; }
         #game-container.theme-animal   { background: url('assets/images/backgrounds/bg-animal.jpg')   center / cover no-repeat; }
         #game-container.theme-vehicle  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
@@ -846,6 +847,7 @@
 
         @media (orientation: landscape) {
             #game-container.theme-balloon  { background-image: url('assets/images/backgrounds/bg-balloon-wide.jpg'); }
+            #game-container.theme-lantern  { background-image: url('assets/images/backgrounds/bg-lantern-wide.jpg'); }
             #game-container.theme-fruit    { background-image: url('assets/images/backgrounds/bg-fruit-wide.jpg'); }
             #game-container.theme-animal   { background-image: url('assets/images/backgrounds/bg-animal-wide.jpg'); }
             #game-container.theme-vehicle  { background-image: url('assets/images/backgrounds/bg-vehicle-wide.jpg'); }
@@ -1124,6 +1126,77 @@
         @keyframes balloonFloat {
             0%, 100% { transform: translateY(0) rotate(-2deg); }
             50%      { transform: translateY(-4px) rotate(2deg); }
+        }
+
+        /* Sky lantern (天燈): warm glowing paper-lantern body with a flickering flame. */
+        .lantern-style {
+            padding: 0;
+            overflow: visible;
+            background-color: transparent !important;
+            box-shadow: none;
+        }
+
+        .sky-lantern-body {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            /* taller paper-lantern dome, narrower at the bottom opening */
+            border-radius: 50% 50% 42% 42% / 60% 60% 40% 40%;
+            background-image:
+                radial-gradient(ellipse 62% 46% at 50% 40%, rgba(255, 248, 200, 0.85), rgba(255, 248, 200, 0) 70%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(0, 0, 0, 0.18) 100%);
+            box-shadow:
+                0 0 26px 5px rgba(255, 170, 80, 0.55),
+                inset 0 -9px 16px rgba(120, 45, 12, 0.38),
+                inset 0 8px 13px rgba(255, 255, 255, 0.32);
+            animation: lanternGlow 1.9s ease-in-out infinite;
+        }
+
+        .sky-lantern-body::before {
+            /* top rim / cap */
+            content: "";
+            position: absolute;
+            top: -5%;
+            left: 30%;
+            width: 40%;
+            height: 9%;
+            border-radius: 50%;
+            background: rgba(140, 70, 30, 0.45);
+        }
+
+        .sky-lantern-body::after {
+            /* bottom opening glow */
+            content: "";
+            position: absolute;
+            bottom: -4%;
+            left: 32%;
+            width: 36%;
+            height: 13%;
+            border-radius: 0 0 50% 50%;
+            background: radial-gradient(ellipse at 50% 0%, rgba(255, 232, 150, 0.95), rgba(255, 140, 40, 0.45) 70%, transparent);
+        }
+
+        .sky-lantern-flame {
+            position: absolute;
+            bottom: 3%;
+            left: 50%;
+            width: 15%;
+            height: 20%;
+            transform: translateX(-50%);
+            border-radius: 50% 50% 50% 50% / 62% 62% 40% 40%;
+            background: radial-gradient(ellipse at 50% 70%, #FFF6C0, #FFB23E 60%, transparent 76%);
+            animation: lanternFlame 0.5s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes lanternGlow {
+            0%, 100% { filter: brightness(1); }
+            50%      { filter: brightness(1.13); }
+        }
+
+        @keyframes lanternFlame {
+            0%   { transform: translateX(-50%) scaleY(1); opacity: 0.9; }
+            100% { transform: translateX(-50%) scaleY(1.28); opacity: 1; }
         }
 
         .emoji-style {
@@ -1761,6 +1834,10 @@
                     <span class="option-icon">🎈</span>
                     <span class="option-text">氣球</span>
                 </button>
+                <button class="option-btn" data-mode="lantern">
+                    <span class="option-icon">🏮</span>
+                    <span class="option-text">天燈</span>
+                </button>
                 <button class="option-btn" data-mode="fruit">
                     <span class="option-icon">🍎</span>
                     <span class="option-text">水果</span>
@@ -2223,6 +2300,18 @@
                 ],
                 popText: '✨',
                 encouragements: ['氣球飛出魔法光！', '漂亮的顏色！', '樂佩看到了星星！']
+            },
+            lantern: {
+                label: '天燈',
+                type: 'color',
+                render: 'lantern',
+                missClass: 'miss-lantern',
+                items: [
+                    '#FF8C42', '#FFC857', '#FF5D5D', '#FF6FA8', '#FFD93D',
+                    '#FF9E6D', '#C77DFF', '#FFE7A8', '#FFAE5C', '#FF7AA8'
+                ],
+                popText: '🏮',
+                encouragements: ['天燈飛上天！', '許個願望吧！', '越飄越高！']
             },
             fruit: {
                 label: '水果',
@@ -2841,6 +2930,37 @@
             playSfx('balloon-pop');
         }
 
+        function playLanternWhoosh() {
+            // Gentle airy whoosh + soft rising chime when a sky lantern is released.
+            if (!audioCtx || state.muted) return;
+            const t = audioCtx.currentTime;
+            // Airy noise sweep (the lantern catching the wind)
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = getNoiseBuffer();
+            const bp = audioCtx.createBiquadFilter();
+            bp.type = 'bandpass';
+            bp.frequency.setValueAtTime(480, t);
+            bp.frequency.exponentialRampToValueAtTime(2200, t + 0.42);
+            bp.Q.value = 0.7;
+            const ng = audioCtx.createGain();
+            ng.gain.setValueAtTime(0.0001, t);
+            ng.gain.exponentialRampToValueAtTime(0.22, t + 0.12);
+            ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+            noise.connect(bp); bp.connect(ng); connectSound(ng);
+            noise.start(t); noise.stop(t + 0.5);
+            // Soft rising chime (the warm glow)
+            const osc = audioCtx.createOscillator();
+            const og = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, t);
+            osc.frequency.exponentialRampToValueAtTime(900, t + 0.4);
+            og.gain.setValueAtTime(0.0001, t);
+            og.gain.exponentialRampToValueAtTime(0.2, t + 0.1);
+            og.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+            osc.connect(og); connectSound(og);
+            osc.start(t); osc.stop(t + 0.5);
+        }
+
         function playSliceSound() {
             if (!audioCtx || state.muted) return;
             const t = audioCtx.currentTime;
@@ -3429,7 +3549,7 @@
         }
 
         function updateSceneTheme(mode) {
-            container.classList.remove('theme-balloon', 'theme-fruit', 'theme-animal', 'theme-vehicle', 'theme-alphabet');
+            container.classList.remove('theme-balloon', 'theme-lantern', 'theme-fruit', 'theme-animal', 'theme-vehicle', 'theme-alphabet');
             if (mode) container.classList.add(`theme-${mode}`);
         }
 
@@ -3618,10 +3738,12 @@
             const itemWidth = state.mode === 'vehicle' ? size * 1.34
                 : state.mode === 'alphabet' ? size * 1.25
                 : state.mode === 'balloon' ? size * 0.92
+                : state.mode === 'lantern' ? size * 0.95
                 : size;
             const itemHeight = state.mode === 'vehicle' ? size * 0.96
                 : state.mode === 'alphabet' ? size * 1.2
                 : state.mode === 'balloon' ? size * 1.20
+                : state.mode === 'lantern' ? size * 1.28
                 : size;
             item.style.width = `${itemWidth}px`;
             item.style.height = `${itemHeight}px`;
@@ -3709,8 +3831,8 @@
             } else {
                 const maxX = Math.max(0, window.innerWidth - itemWidth - 24);
                 startX = 12 + Math.random() * maxX;
-                // Balloons float up from below the viewport; everything else still falls in from above.
-                startY = state.mode === 'balloon' ? window.innerHeight + itemHeight : -itemHeight;
+                // Balloons & sky lanterns float up from below the viewport; everything else falls in from above.
+                startY = (state.mode === 'balloon' || state.mode === 'lantern') ? window.innerHeight + itemHeight : -itemHeight;
             }
             item.style.left = `${startX}px`;
             item.style.top = `${startY}px`;
@@ -3719,6 +3841,16 @@
                 applyLetterItem(item, letterChoice, size);
                 item._spokenWord = letterChoice.word;
                 item._spokenLetter = letterChoice.letter;
+            } else if (fallbackColor && modeData.render === 'lantern') {
+                // Sky lantern: a warm glowing paper-lantern body with a flickering flame.
+                item.classList.add('lantern-style');
+                const body = document.createElement('span');
+                body.className = 'sky-lantern-body';
+                body.style.backgroundColor = fallbackColor;
+                item.appendChild(body);
+                const flame = document.createElement('span');
+                flame.className = 'sky-lantern-flame';
+                item.appendChild(flame);
             } else if (fallbackColor) {
                 // Always render balloons with the realistic CSS style (no sprite),
                 // so every color shares the same glossy egg + knot + string look.
@@ -3757,6 +3889,23 @@
                 ], {
                     duration: fallDurationForLevel(state.level),
                     easing: 'linear'
+                });
+            } else if (state.mode === 'lantern') {
+                // Sky lanterns drift upward while swaying left-right in an S-curve,
+                // rising a touch slower than balloons for a serene festival feel.
+                const rise = window.innerHeight + itemHeight * 2;
+                const amp = 28 + Math.random() * 34;
+                const d = Math.random() < 0.5 ? 1 : -1;
+                animation = item.animate([
+                    { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
+                    { transform: `translateY(-${rise * 0.2}px) translateX(${amp * d}px) rotate(${5 * d}deg)`, offset: 0.2 },
+                    { transform: `translateY(-${rise * 0.4}px) translateX(${-amp * d}px) rotate(${-5 * d}deg)`, offset: 0.4 },
+                    { transform: `translateY(-${rise * 0.6}px) translateX(${amp * d}px) rotate(${5 * d}deg)`, offset: 0.6 },
+                    { transform: `translateY(-${rise * 0.8}px) translateX(${-amp * d}px) rotate(${-5 * d}deg)`, offset: 0.8 },
+                    { transform: `translateY(-${rise}px) translateX(0px) rotate(0deg)` }
+                ], {
+                    duration: fallDurationForLevel(state.level) * 1.2,
+                    easing: 'ease-in-out'
                 });
             } else if (state.mode === 'balloon') {
                 // Balloons drift upward off the top of the screen, with a gentle horizontal sway.
@@ -3802,7 +3951,7 @@
                 state.combo = 0;
                 updateStats();
                 animation.cancel();
-                if (state.mode === 'vehicle' || state.mode === 'balloon' || state.mode === 'fruit') {
+                if (state.mode === 'vehicle' || state.mode === 'balloon' || state.mode === 'lantern' || state.mode === 'fruit') {
                     // Already drifted / fell off-screen — no extra miss animation needed.
                     removeItem(item);
                 } else {
@@ -3846,6 +3995,9 @@
                     const colorWord = item._spokenWord;
                     setTimeout(() => speakEnglishWord(colorWord), 250);
                 }
+            } else if (state.mode === 'lantern') {
+                // Tap gives the lantern a whoosh boost upward (handled in the tail below).
+                playLanternWhoosh();
             } else if (state.mode === 'fruit') {
                 // Fruit mode is swipe-only — taps without movement are intentionally ignored.
                 return;
@@ -3875,8 +4027,29 @@
                 showToast(encourageToast, randomEncouragement());
             }
 
-            removeItem(item);
+            if (state.mode === 'lantern') {
+                boostLantern(item);   // whoosh up + fade, removes itself when done
+            } else {
+                removeItem(item);
+            }
             updateStats();
+        }
+
+        function boostLantern(item) {
+            // Pin the lantern to its current on-screen spot, then send it whooshing up
+            // off the top with a fade — a satisfying "released" feel on tap.
+            const cRect = container.getBoundingClientRect();
+            const rect = item.getBoundingClientRect();
+            if (item._fallAnimation) { try { item._fallAnimation.cancel(); } catch (e) { /* ignore */ } }
+            item.style.left = `${rect.left - cRect.left}px`;
+            item.style.top = `${rect.top - cRect.top}px`;
+            const travel = rect.bottom + 180;
+            const boost = item.animate([
+                { transform: 'translateY(0px) scale(1)', opacity: 1 },
+                { transform: `translateY(-${travel}px) scale(0.6)`, opacity: 0 }
+            ], { duration: 700, easing: 'cubic-bezier(0.3, 0, 0.2, 1)' });
+            item._fallAnimation = boost;
+            boost.onfinish = () => removeItem(item);
         }
 
         function updateMissionProgress(key) {
