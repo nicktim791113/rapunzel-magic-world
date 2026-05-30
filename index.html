@@ -843,6 +843,7 @@
         #game-container.theme-fruit    { background: url('assets/images/backgrounds/bg-fruit.jpg')    center / cover no-repeat; }
         #game-container.theme-animal   { background: url('assets/images/backgrounds/bg-animal.jpg')   center / cover no-repeat; }
         #game-container.theme-vehicle  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
+        #game-container.theme-machine  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
         #game-container.theme-alphabet { background: url('assets/images/backgrounds/bg-alphabet.jpg') center / cover no-repeat; }
 
         @media (orientation: landscape) {
@@ -851,6 +852,7 @@
             #game-container.theme-fruit    { background-image: url('assets/images/backgrounds/bg-fruit-wide.jpg'); }
             #game-container.theme-animal   { background-image: url('assets/images/backgrounds/bg-animal-wide.jpg'); }
             #game-container.theme-vehicle  { background-image: url('assets/images/backgrounds/bg-vehicle-wide.jpg'); }
+            #game-container.theme-machine  { background-image: url('assets/images/backgrounds/bg-vehicle-wide.jpg'); }
             #game-container.theme-alphabet { background-image: url('assets/images/backgrounds/bg-alphabet-wide.jpg'); }
         }
 
@@ -1850,6 +1852,10 @@
                     <span class="option-icon">🚂</span>
                     <span class="option-text">車車</span>
                 </button>
+                <button class="option-btn" data-mode="machine">
+                    <span class="option-icon">🚜</span>
+                    <span class="option-text">工程車</span>
+                </button>
                 <button class="option-btn" data-mode="alphabet">
                     <span class="option-icon">ABC</span>
                     <span class="option-text">英文字母</span>
@@ -2286,7 +2292,23 @@
             '🚁': { file: 'assets/images/items/vehicle-helicopter.png', group: 'vehicle', label: '直升機' },
             '🚓': { file: 'assets/images/items/vehicle-police.png',     group: 'vehicle', label: '警車'   },
             '🚒': { file: 'assets/images/items/vehicle-firetruck.png',  group: 'vehicle', label: '消防車' },
-            '🚑': { file: 'assets/images/items/vehicle-ambulance.png',  group: 'vehicle', label: '救護車' }
+            '🚑': { file: 'assets/images/items/vehicle-ambulance.png',  group: 'vehicle', label: '救護車' },
+            'lantern-red':    { file: 'assets/images/items/lantern-red.png',    group: 'lantern', label: '天燈' },
+            'lantern-orange': { file: 'assets/images/items/lantern-orange.png', group: 'lantern', label: '天燈' },
+            'lantern-gold':   { file: 'assets/images/items/lantern-gold.png',   group: 'lantern', label: '天燈' },
+            'lantern-pink':   { file: 'assets/images/items/lantern-pink.png',   group: 'lantern', label: '天燈' },
+            'lantern-green':  { file: 'assets/images/items/lantern-green.png',  group: 'lantern', label: '天燈' },
+            'lantern-blue':   { file: 'assets/images/items/lantern-blue.png',   group: 'lantern', label: '天燈' },
+            'machine-excavator': { file: 'assets/images/items/machine-excavator.png', group: 'vehicle', label: '挖土機' },
+            'machine-bulldozer': { file: 'assets/images/items/machine-bulldozer.png', group: 'vehicle', label: '推土機' },
+            'machine-dumptruck': { file: 'assets/images/items/machine-dumptruck.png', group: 'vehicle', label: '砂石車' },
+            'machine-crane':     { file: 'assets/images/items/machine-crane.png',     group: 'vehicle', label: '吊車' },
+            'machine-mixer':     { file: 'assets/images/items/machine-mixer.png',     group: 'vehicle', label: '水泥車' },
+            'machine-forklift':  { file: 'assets/images/items/machine-forklift.png',  group: 'vehicle', label: '堆高機' },
+            'machine-roller':    { file: 'assets/images/items/machine-roller.png',    group: 'vehicle', label: '壓路機' },
+            'machine-loader':    { file: 'assets/images/items/machine-loader.png',    group: 'vehicle', label: '裝載機' },
+            'machine-tractor':   { file: 'assets/images/items/machine-tractor.png',   group: 'vehicle', label: '拖拉機' },
+            'machine-towtruck':  { file: 'assets/images/items/machine-towtruck.png',  group: 'vehicle', label: '拖吊車' }
         };
 
         const gameData = {
@@ -2303,12 +2325,11 @@
             },
             lantern: {
                 label: '天燈',
-                type: 'color',
-                render: 'lantern',
+                type: 'emoji',
                 missClass: 'miss-lantern',
                 items: [
-                    '#FF8C42', '#FFC857', '#FF5D5D', '#FF6FA8', '#FFD93D',
-                    '#FF9E6D', '#C77DFF', '#FFE7A8', '#FFAE5C', '#FF7AA8'
+                    'lantern-red', 'lantern-orange', 'lantern-gold',
+                    'lantern-pink', 'lantern-green', 'lantern-blue'
                 ],
                 popText: '🏮',
                 encouragements: ['天燈飛上天！', '許個願望吧！', '越飄越高！']
@@ -2358,6 +2379,25 @@
                 ],
                 popText: 'Vroom!',
                 encouragements: ['出發去冒險！', '車車跑得真快！', '交通魔法啟動！']
+            },
+            machine: {
+                label: '工程車',
+                type: 'sound_object',
+                missClass: 'miss-vehicle',
+                items: [
+                    { emoji: 'machine-excavator', sound: 'excavator', english: 'excavator',    direction: 'ground-left-right', faces: 'right' },
+                    { emoji: 'machine-bulldozer', sound: 'bulldozer', english: 'bulldozer',    direction: 'ground-right-left', faces: 'right' },
+                    { emoji: 'machine-dumptruck', sound: 'dumptruck', english: 'dump truck',   direction: 'ground-left-right', faces: 'right' },
+                    { emoji: 'machine-crane',     sound: 'crane',     english: 'crane',         direction: 'ground-right-left', faces: 'right' },
+                    { emoji: 'machine-mixer',     sound: 'mixer',     english: 'cement mixer',  direction: 'ground-left-right', faces: 'right' },
+                    { emoji: 'machine-forklift',  sound: 'forklift',  english: 'forklift',      direction: 'ground-right-left', faces: 'right' },
+                    { emoji: 'machine-roller',    sound: 'roller',    english: 'road roller',   direction: 'ground-left-right', faces: 'right' },
+                    { emoji: 'machine-loader',    sound: 'loader',    english: 'loader',        direction: 'ground-right-left', faces: 'right' },
+                    { emoji: 'machine-tractor',   sound: 'tractor',   english: 'tractor',       direction: 'ground-left-right', faces: 'right' },
+                    { emoji: 'machine-towtruck',  sound: 'towtruck',  english: 'tow truck',     direction: 'ground-right-left', faces: 'right' }
+                ],
+                popText: 'Vroom!',
+                encouragements: ['工程車出動！', '蓋一座魔法城堡！', '挖呀挖呀挖！']
             },
             alphabet: {
                 label: '英文字母',
@@ -2859,7 +2899,17 @@
             'vehicle-helicopter':{ file: 'vehicle-helicopter.mp3',max: 2.0, gain: 1.0 },
             'vehicle-police':    { file: 'vehicle-police.mp3',    max: 1.8, gain: 1.0 },
             'vehicle-firetruck': { file: 'vehicle-firetruck.mp3', max: 1.8, gain: 1.0 },
-            'vehicle-ambulance': { file: 'vehicle-ambulance.mp3', max: 1.8, gain: 1.0 }
+            'vehicle-ambulance': { file: 'vehicle-ambulance.mp3', max: 1.8, gain: 1.0 },
+            'machine-excavator': { file: 'machine-excavator.mp3', max: 2.4, gain: 1.0 },
+            'machine-bulldozer': { file: 'machine-bulldozer.mp3', max: 2.4, gain: 1.0 },
+            'machine-dumptruck': { file: 'machine-dumptruck.mp3', max: 2.4, gain: 1.0 },
+            'machine-crane':     { file: 'machine-crane.mp3',     max: 2.4, gain: 1.0 },
+            'machine-mixer':     { file: 'machine-mixer.mp3',     max: 2.4, gain: 1.0 },
+            'machine-forklift':  { file: 'machine-forklift.mp3',  max: 2.4, gain: 1.0 },
+            'machine-roller':    { file: 'machine-roller.mp3',    max: 2.4, gain: 1.0 },
+            'machine-loader':    { file: 'machine-loader.mp3',    max: 2.4, gain: 1.0 },
+            'machine-tractor':   { file: 'machine-tractor.mp3',   max: 2.4, gain: 1.0 },
+            'machine-towtruck':  { file: 'machine-towtruck.mp3',  max: 2.4, gain: 1.0 }
         };
         // AudioBuffer cache. Decoded once per session via Web Audio API so playback goes
         // through audioCtx + masterGain (same gesture context as the synth fallback) and
@@ -3549,7 +3599,7 @@
         }
 
         function updateSceneTheme(mode) {
-            container.classList.remove('theme-balloon', 'theme-lantern', 'theme-fruit', 'theme-animal', 'theme-vehicle', 'theme-alphabet');
+            container.classList.remove('theme-balloon', 'theme-lantern', 'theme-fruit', 'theme-animal', 'theme-vehicle', 'theme-machine', 'theme-alphabet');
             if (mode) container.classList.add(`theme-${mode}`);
         }
 
@@ -3735,15 +3785,15 @@
             state.activeItems.add(item);
 
             const size = 68 + Math.random() * 38;
-            const itemWidth = state.mode === 'vehicle' ? size * 1.34
+            const itemWidth = (state.mode === 'vehicle' || state.mode === 'machine') ? size * 1.34
                 : state.mode === 'alphabet' ? size * 1.25
                 : state.mode === 'balloon' ? size * 0.92
-                : state.mode === 'lantern' ? size * 0.95
+                : state.mode === 'lantern' ? size * 1.05
                 : size;
-            const itemHeight = state.mode === 'vehicle' ? size * 0.96
+            const itemHeight = (state.mode === 'vehicle' || state.mode === 'machine') ? size * 0.96
                 : state.mode === 'alphabet' ? size * 1.2
                 : state.mode === 'balloon' ? size * 1.20
-                : state.mode === 'lantern' ? size * 1.28
+                : state.mode === 'lantern' ? size * 1.25
                 : size;
             item.style.width = `${itemWidth}px`;
             item.style.height = `${itemHeight}px`;
@@ -3777,7 +3827,7 @@
                 missionKey = choice.emoji;
                 fallbackText = choice.emoji;
                 item._spokenWord = choice.sound || '';
-                if (state.mode === 'vehicle') {
+                if (state.mode === 'vehicle' || state.mode === 'machine') {
                     vehicleChoice = choice;
                 }
             }
@@ -3841,16 +3891,6 @@
                 applyLetterItem(item, letterChoice, size);
                 item._spokenWord = letterChoice.word;
                 item._spokenLetter = letterChoice.letter;
-            } else if (fallbackColor && modeData.render === 'lantern') {
-                // Sky lantern: a warm glowing paper-lantern body with a flickering flame.
-                item.classList.add('lantern-style');
-                const body = document.createElement('span');
-                body.className = 'sky-lantern-body';
-                body.style.backgroundColor = fallbackColor;
-                item.appendChild(body);
-                const flame = document.createElement('span');
-                flame.className = 'sky-lantern-flame';
-                item.appendChild(flame);
             } else if (fallbackColor) {
                 // Always render balloons with the realistic CSS style (no sprite),
                 // so every color shares the same glossy egg + knot + string look.
@@ -3985,6 +4025,10 @@
             } else if (state.mode === 'vehicle') {
                 playVehicleSound(soundType);
                 if (item._spokenWord) speakEnglishWord(item._spokenWord);
+            } else if (state.mode === 'machine') {
+                // Real recorded construction-machine sound, then say the English name.
+                playSfx(`machine-${soundType}`);
+                if (item._spokenWord) setTimeout(() => speakEnglishWord(item._spokenWord), 220);
             } else if (state.mode === 'alphabet') {
                 playLetterChime(item._spokenLetter);
                 speakLetterAndWord(item._spokenLetter, item._spokenWord);

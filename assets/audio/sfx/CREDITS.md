@@ -26,6 +26,19 @@ No attribution required, but listed below for traceability.
 | `vehicle-police.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/police%20siren/> | Pixabay Content License | DRAGON-STUDIO |
 | `vehicle-rocket.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/rocket%20launch/> | Pixabay Content License | 49053354 |
 | `vehicle-train.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/train%20whistle/> | Pixabay Content License | amber2023 |
+| `machine-excavator.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/excavator/> | Pixabay Content License | freesound_community |
+| `machine-bulldozer.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/bulldozer/> | Pixabay Content License | freesound_community |
+| `machine-dumptruck.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/dump%20truck/> | Pixabay Content License | freesound_community |
+| `machine-crane.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/construction%20crane/> | Pixabay Content License | freesound_community |
+| `machine-mixer.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/cement%20mixer/> | Pixabay Content License | freesound_community |
+| `machine-forklift.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/forklift/> | Pixabay Content License | freesound_community |
+| `machine-roller.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/road%20roller/> | Pixabay Content License | freesound_community |
+| `machine-loader.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/wheel%20loader/> | Pixabay Content License | spinopel |
+| `machine-tractor.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/tractor/> | Pixabay Content License | white_records |
+| `machine-towtruck.mp3` | Pixabay | <https://pixabay.com/sound-effects/search/tow%20truck/> | Pixabay Content License | 31736081 |
+
+All `machine-*.mp3` were trimmed to ~2.6 s mono 96 kbps with a fade-out (via ffmpeg)
+so the long source recordings stay small for the PWA cache.
 
 ## License summary
 
