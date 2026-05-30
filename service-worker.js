@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rapunzel-magic-world-v49';
+const CACHE_NAME = 'rapunzel-magic-world-v50';
 
 const APP_ASSETS = [
   './',
@@ -12,6 +12,11 @@ const APP_ASSETS = [
   './assets/images/backgrounds/bg-animal.jpg',
   './assets/images/backgrounds/bg-vehicle.jpg',
   './assets/images/backgrounds/bg-alphabet.jpg',
+  './assets/images/backgrounds/bg-balloon-wide.jpg',
+  './assets/images/backgrounds/bg-fruit-wide.jpg',
+  './assets/images/backgrounds/bg-animal-wide.jpg',
+  './assets/images/backgrounds/bg-vehicle-wide.jpg',
+  './assets/images/backgrounds/bg-alphabet-wide.jpg',
   './assets/audio/the-glade-at-dawn.mp3',
   './assets/audio/where-the-sunbeams-hide.mp3',
   './assets/audio/abc-song.mp3',

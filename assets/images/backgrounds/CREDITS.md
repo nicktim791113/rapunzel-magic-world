@@ -2,13 +2,18 @@
 
 Per-mode full-screen storybook backgrounds for 樂佩魔法 (Rapunzel Magic World).
 
+Each mode has TWO variants: a **portrait** (1024×1536) for phones and a **wide**
+landscape (1536×1024) for desktop/tablet, switched by `@media (orientation: landscape)`.
+Portrait `cover` on a wide screen would crop the art down to a thin band — hence the
+dedicated wide versions.
+
 | File | Mode | Scene |
 |---|---|---|
-| `bg-balloon.jpg`  | 氣球 balloon   | Dawn sky, floating lanterns, distant magic tower, flower hills |
-| `bg-fruit.jpg`    | 水果 fruit     | Golden-hour magic orchard, glowing fruit trees, flower meadow |
-| `bg-animal.jpg`   | 動物園 animal  | Enchanted forest glade, fence + lily pond, sunbeams |
-| `bg-vehicle.jpg`  | 車車 vehicle   | Whimsical town: cobblestone road (lower third) + open sky |
-| `bg-alphabet.jpg` | ABC alphabet  | Dusk starry night-garden, lanterns, open books + quill |
+| `bg-balloon.jpg` / `-wide.jpg`  | 氣球 balloon   | Dawn sky, floating lanterns, distant magic tower, flower hills |
+| `bg-fruit.jpg` / `-wide.jpg`    | 水果 fruit     | Golden-hour magic orchard, glowing fruit trees, flower meadow |
+| `bg-animal.jpg` / `-wide.jpg`   | 動物園 animal  | Enchanted forest glade, fence + lily pond, sunbeams |
+| `bg-vehicle.jpg` / `-wide.jpg`  | 車車 vehicle   | Whimsical town: cobblestone road (lower third) + open sky |
+| `bg-alphabet.jpg` / `-wide.jpg` | ABC alphabet  | Dusk starry night-garden, lanterns, open books + quill |
 
 ## Source / License
 

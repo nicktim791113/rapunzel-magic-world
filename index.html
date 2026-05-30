@@ -834,12 +834,23 @@
 
         /* Painted storybook backgrounds per mode (ChatGPT-generated, original
            fairy-tale magic scenery). ID-qualified so they outrank #game-container's
-           own background. cover keeps them full-bleed on every aspect ratio. */
+           own background. cover keeps them full-bleed.
+           Default = PORTRAIT art (1024x1536) for phones. A landscape media query
+           below swaps to WIDE art (1536x1024) so desktop/tablet don't get the
+           portrait image cropped down to a thin center band. */
         #game-container.theme-balloon  { background: url('assets/images/backgrounds/bg-balloon.jpg')  center / cover no-repeat; }
         #game-container.theme-fruit    { background: url('assets/images/backgrounds/bg-fruit.jpg')    center / cover no-repeat; }
         #game-container.theme-animal   { background: url('assets/images/backgrounds/bg-animal.jpg')   center / cover no-repeat; }
         #game-container.theme-vehicle  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
         #game-container.theme-alphabet { background: url('assets/images/backgrounds/bg-alphabet.jpg') center / cover no-repeat; }
+
+        @media (orientation: landscape) {
+            #game-container.theme-balloon  { background-image: url('assets/images/backgrounds/bg-balloon-wide.jpg'); }
+            #game-container.theme-fruit    { background-image: url('assets/images/backgrounds/bg-fruit-wide.jpg'); }
+            #game-container.theme-animal   { background-image: url('assets/images/backgrounds/bg-animal-wide.jpg'); }
+            #game-container.theme-vehicle  { background-image: url('assets/images/backgrounds/bg-vehicle-wide.jpg'); }
+            #game-container.theme-alphabet { background-image: url('assets/images/backgrounds/bg-alphabet-wide.jpg'); }
+        }
 
         /* During gameplay (a theme class is present) the painted illustration already
            contains its own tower / lanterns / scenery, so hide the old CSS scenery.
