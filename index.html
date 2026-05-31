@@ -843,7 +843,7 @@
         #game-container.theme-fruit    { background: url('assets/images/backgrounds/bg-fruit.jpg')    center / cover no-repeat; }
         #game-container.theme-animal   { background: url('assets/images/backgrounds/bg-animal.jpg')   center / cover no-repeat; }
         #game-container.theme-vehicle  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
-        #game-container.theme-machine  { background: url('assets/images/backgrounds/bg-vehicle.jpg')  center / cover no-repeat; }
+        #game-container.theme-machine  { background: url('assets/images/backgrounds/bg-machine.jpg')  center / cover no-repeat; }
         #game-container.theme-alphabet { background: url('assets/images/backgrounds/bg-alphabet.jpg') center / cover no-repeat; }
 
         @media (orientation: landscape) {
@@ -852,7 +852,7 @@
             #game-container.theme-fruit    { background-image: url('assets/images/backgrounds/bg-fruit-wide.jpg'); }
             #game-container.theme-animal   { background-image: url('assets/images/backgrounds/bg-animal-wide.jpg'); }
             #game-container.theme-vehicle  { background-image: url('assets/images/backgrounds/bg-vehicle-wide.jpg'); }
-            #game-container.theme-machine  { background-image: url('assets/images/backgrounds/bg-vehicle-wide.jpg'); }
+            #game-container.theme-machine  { background-image: url('assets/images/backgrounds/bg-machine-wide.jpg'); }
             #game-container.theme-alphabet { background-image: url('assets/images/backgrounds/bg-alphabet-wide.jpg'); }
         }
 
@@ -3833,7 +3833,36 @@
             }
 
             let startX, startY, endTransform;
-            if (vehicleChoice) {
+            if (vehicleChoice && state.mode === 'machine') {
+                // 2.5D wandering across the construction site: the machine enters one side,
+                // meanders through a few waypoints (changing depth = vertical position), and
+                // exits the far side. Nearer the bottom = closer = bigger (depth scale).
+                const dir = vehicleChoice.direction;
+                const goingRight = dir.indexOf('left-right') !== -1;
+                const yFar = window.innerHeight * 0.46;                                   // back of the site (smaller)
+                const yNear = window.innerHeight - itemHeight - window.innerHeight * 0.05; // front of the site (bigger)
+                const depthScale = (y) => {
+                    const t = Math.max(0, Math.min(1, (y - yFar) / Math.max(1, yNear - yFar)));
+                    return 0.72 + t * 0.42; // 0.72 (far) .. 1.14 (near)
+                };
+                startX = goingRight ? -itemWidth : window.innerWidth + itemWidth;
+                const endX = goingRight ? window.innerWidth + itemWidth : -itemWidth;
+                startY = yFar + Math.random() * (yNear - yFar);
+                // 3 interior waypoints: x progresses across; y wanders within the work band.
+                const pts = [{ x: startX, y: startY }];
+                for (let k = 1; k <= 3; k++) {
+                    const tx = k / 4;
+                    const wx = startX + (endX - startX) * tx + (Math.random() * 80 - 40);
+                    const wy = yFar + Math.random() * (yNear - yFar);
+                    pts.push({ x: wx, y: wy });
+                }
+                pts.push({ x: endX, y: yFar + Math.random() * (yNear - yFar) });
+                // Build WAAPI keyframes relative to the start position, with per-point depth scale.
+                item._machineKeyframes = pts.map((p, i) => ({
+                    transform: `translate(${(p.x - startX).toFixed(1)}px, ${(p.y - startY).toFixed(1)}px) scale(${depthScale(p.y).toFixed(3)})`,
+                    offset: i / (pts.length - 1)
+                }));
+            } else if (vehicleChoice) {
                 const dir = vehicleChoice.direction;
                 // Y bands tuned to the scene: sky region (top), ground region (just above grass line)
                 const groundY = window.innerHeight - itemHeight - Math.max(20, window.innerHeight * (0.04 + Math.random() * 0.06));
@@ -3922,7 +3951,13 @@
             const endY = window.innerHeight - itemHeight - 22;
             const endRotation = state.mode === 'alphabet' ? (Math.random() * 20 - 10) : (Math.random() * 60 - 30);
             let animation;
-            if (vehicleChoice) {
+            if (state.mode === 'machine' && item._machineKeyframes) {
+                // Wandering 2.5D path across the site (slower than straight traffic).
+                animation = item.animate(item._machineKeyframes, {
+                    duration: fallDurationForLevel(state.level) * 1.6,
+                    easing: 'ease-in-out'
+                });
+            } else if (vehicleChoice) {
                 animation = item.animate([
                     { transform: 'translateX(0px) translateY(0px) rotate(0deg)' },
                     { transform: endTransform }
@@ -3991,7 +4026,7 @@
                 state.combo = 0;
                 updateStats();
                 animation.cancel();
-                if (state.mode === 'vehicle' || state.mode === 'balloon' || state.mode === 'lantern' || state.mode === 'fruit') {
+                if (state.mode === 'vehicle' || state.mode === 'machine' || state.mode === 'balloon' || state.mode === 'lantern' || state.mode === 'fruit') {
                     // Already drifted / fell off-screen — no extra miss animation needed.
                     removeItem(item);
                 } else {

@@ -14,6 +14,7 @@ dedicated wide versions.
 | `bg-fruit.jpg` / `-wide.jpg`    | 水果 fruit     | Golden-hour magic orchard, glowing fruit trees, flower meadow |
 | `bg-animal.jpg` / `-wide.jpg`   | 動物園 animal  | Enchanted forest glade, fence + lily pond, sunbeams |
 | `bg-vehicle.jpg` / `-wide.jpg`  | 車車 vehicle   | Whimsical town: cobblestone road (lower third) + open sky |
+| `bg-machine.jpg` / `-wide.jpg`  | 工程車 machine | Half-built fairy-tale castle construction site: scaffolding, tower crane lifting a block, sand piles, striped site fencing, traffic cones, wide-open dirt foreground for 2.5D roaming machines |
 | `bg-alphabet.jpg` / `-wide.jpg` | ABC alphabet  | Dusk starry night-garden, lanterns, open books + quill |
 
 ## Source / License
